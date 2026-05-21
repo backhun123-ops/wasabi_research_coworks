@@ -1,3 +1,5 @@
+"use client";
+
 import React, {
   createContext,
   useCallback,
@@ -18,12 +20,10 @@ import {
   Grid3X3,
   Layers3,
   MessageSquareText,
-  Plus,
   RefreshCw,
   Search,
   Send,
   Sprout,
-  Trash2,
   X,
 } from "lucide-react";
 import {
@@ -36,16 +36,6 @@ import {
   YAxis,
 } from "recharts";
 
-const STORAGE_KEYS = {
-  phase1: "wasabi-rnd.phase1.v1",
-  phase2: "wasabi-rnd.phase2.v1",
-  legacyPhase2: "wasabi-rnd.samples.v1",
-  monitoring: "wasabi-rnd.phase2.monitoring.v1",
-  layout: "wasabi-rnd.layout.v3",
-  logs: "wasabi-rnd.logs.v1",
-};
-
-const PHASE1_STATUSES = ["준비", "배양중", "수확완료", "오염/폐기"];
 const PHASE2_STATUSES = ["대기중", "배양중", "수확완료", "오염됨"];
 const RB_LEVELS = ["9:1", "7:3", "5:5"];
 const FR_LEVELS = [0, 10];
@@ -82,20 +72,6 @@ function createId() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-const storage = {
-  read(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch {
-      return fallback;
-    }
-  },
-  write(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  },
-};
-
 function numberOrNull(value) {
   if (value === "" || value === null || value === undefined) return null;
   const parsed = Number(value);
@@ -119,15 +95,12 @@ function formatDateTime(value) {
 }
 
 function buildPhase1Records() {
-  return Array.from({ length: 8 }, (_, index) => ({
-    id: `P1_BATCH_${String(index + 1).padStart(2, "0")}`,
-    cycle: "2026-06 1차",
-    status: index === 0 ? "배양중" : "준비",
-    startDate: "",
-    harvestDate: "",
-    vesselCount: "",
+  return Array.from({ length: 5 }, (_, index) => ({
+    id: `CYCLE_${String(index + 1).padStart(2, "0")}`,
+    subId: `CYCLE_${String(index + 1).padStart(2, "0")}`,
     initialWeight: "",
     finalWeight: "",
+    multiplicationRate: "",
     contaminatedCount: "",
     notes: "",
     updatedAt: new Date().toISOString(),
@@ -266,93 +239,177 @@ function buildBalancedLayout(samples) {
 
 const DashboardContext = createContext(null);
 
+async function fetchJson(url, options) {
+  const response = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `${url} ${response.status}`);
+  }
+  return response.json();
+}
+
+function layoutFromSamples(samples) {
+  const positioned = samples.filter((sample) => Number.isInteger(sample.positionIndex));
+  if (positioned.length === samples.length) {
+    return [...samples]
+      .sort((a, b) => a.positionIndex - b.positionIndex)
+      .map((sample) => sample.id);
+  }
+  return buildBalancedLayout(samples);
+}
+
 function DashboardProvider({ children }) {
   const initialPhase2 = useMemo(buildPhase2Samples, []);
   const [activePhase, setActivePhase] = useState("phase1");
-  const [phase1, setPhase1] = useState(() =>
-    normalizePhase1(storage.read(STORAGE_KEYS.phase1, null)),
-  );
-  const [phase2, setPhase2] = useState(() =>
-    normalizePhase2(
-      storage.read(STORAGE_KEYS.phase2, null),
-      storage.read(STORAGE_KEYS.legacyPhase2, null),
-      initialPhase2,
-    ),
-  );
-  const [monitoring, setMonitoring] = useState(() =>
-    normalizeMonitoring(storage.read(STORAGE_KEYS.monitoring, null), initialPhase2),
-  );
-  const [layout, setLayout] = useState(() => {
-    const saved = storage.read(STORAGE_KEYS.layout, null);
-    return Array.isArray(saved) && saved.length === 144 ? saved : buildBalancedLayout(initialPhase2);
-  });
-  const [logs, setLogs] = useState(() =>
-    storage.read(STORAGE_KEYS.logs, [
-      {
-        id: createId(),
-        author: "시스템",
-        message: "와사비 Phase 1/2 실험 대시보드가 초기화되었습니다.",
-        createdAt: new Date().toISOString(),
-      },
-    ]),
-  );
+  const [phase1, setPhase1] = useState(buildPhase1Records);
+  const [phase2, setPhase2] = useState(initialPhase2);
+  const [monitoring, setMonitoring] = useState(() => buildMonitoringRecords(initialPhase2));
+  const [layout, setLayout] = useState(() => buildBalancedLayout(initialPhase2));
+  const [logs, setLogs] = useState([
+    {
+      id: createId(),
+      author: "시스템",
+      message: "와사비 Phase 1/2 실험 대시보드가 초기화되었습니다.",
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+  const [syncError, setSyncError] = useState("");
   const [selectedId, setSelectedId] = useState("EXP_01_1");
   const [flashId, setFlashId] = useState("");
 
-  useEffect(() => storage.write(STORAGE_KEYS.phase1, phase1), [phase1]);
-  useEffect(() => storage.write(STORAGE_KEYS.phase2, phase2), [phase2]);
-  useEffect(() => storage.write(STORAGE_KEYS.monitoring, monitoring), [monitoring]);
-  useEffect(() => storage.write(STORAGE_KEYS.layout, layout), [layout]);
-  useEffect(() => storage.write(STORAGE_KEYS.logs, logs), [logs]);
+  const refreshPhase1 = useCallback(async () => {
+    const data = await fetchJson("/api/phase1", { cache: "no-store" });
+    setPhase1(normalizePhase1(data.records));
+  }, []);
+
+  const refreshSamples = useCallback(async () => {
+    const data = await fetchJson("/api/samples", { cache: "no-store" });
+    const samples = normalizePhase2(data.samples, null, initialPhase2);
+    setPhase2(samples);
+    setMonitoring(normalizeMonitoring(data.monitoring, samples));
+    setLayout(layoutFromSamples(samples));
+  }, [initialPhase2]);
+
+  const refreshChat = useCallback(async () => {
+    const data = await fetchJson("/api/chat", { cache: "no-store" });
+    setLogs(data.messages ?? []);
+  }, []);
+
+  const refreshAll = useCallback(async () => {
+    try {
+      setSyncError("");
+      await Promise.all([refreshPhase1(), refreshSamples(), refreshChat()]);
+    } catch (error) {
+      setSyncError(error.message);
+    }
+  }, [refreshPhase1, refreshSamples, refreshChat]);
+
+  useEffect(() => {
+    refreshAll();
+    const timer = window.setInterval(refreshAll, 15000);
+    return () => window.clearInterval(timer);
+  }, [refreshAll]);
 
   const phase2Map = useMemo(() => new Map(phase2.map((sample) => [sample.id, sample])), [phase2]);
 
+  const savePhase1 = useCallback(
+    async (record) => {
+      try {
+        await fetchJson("/api/phase1", {
+          method: "PUT",
+          body: JSON.stringify(record),
+        });
+        await refreshPhase1();
+      } catch (error) {
+        setSyncError(error.message);
+        await refreshPhase1();
+      }
+    },
+    [refreshPhase1],
+  );
+
   const updatePhase1 = useCallback((id, patch) => {
+    const currentRecord = phase1.find((record) => record.id === id);
+    if (!currentRecord) return;
+    const nextRecord = {
+      ...currentRecord,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
     setPhase1((current) =>
       current.map((record) =>
-        record.id === id ? { ...record, ...patch, updatedAt: new Date().toISOString() } : record,
+        record.id === id ? nextRecord : record,
       ),
     );
-  }, []);
+    void savePhase1(nextRecord);
+  }, [phase1, savePhase1]);
 
-  const addPhase1Record = useCallback(() => {
-    setPhase1((current) => [
-      ...current,
-      {
-        id: `P1_BATCH_${String(current.length + 1).padStart(2, "0")}`,
-        cycle: "2026-06 1차",
-        status: "준비",
-        startDate: "",
-        harvestDate: "",
-        vesselCount: "",
-        initialWeight: "",
-        finalWeight: "",
-        contaminatedCount: "",
-        notes: "",
-        updatedAt: new Date().toISOString(),
-      },
-    ]);
-  }, []);
-
-  const deletePhase1Record = useCallback((id) => {
-    setPhase1((current) => current.filter((record) => record.id !== id));
-  }, []);
+  const saveSample = useCallback(
+    async (sample) => {
+      try {
+        await fetchJson("/api/samples", {
+          method: "PUT",
+          body: JSON.stringify({ sample }),
+        });
+        await refreshSamples();
+      } catch (error) {
+        setSyncError(error.message);
+        await refreshSamples();
+      }
+    },
+    [refreshSamples],
+  );
 
   const updatePhase2 = useCallback((id, patch) => {
+    const currentSample = phase2.find((sample) => sample.id === id);
+    if (!currentSample) return;
+    const nextSample = {
+      ...currentSample,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
     setPhase2((current) =>
       current.map((sample) =>
-        sample.id === id ? { ...sample, ...patch, updatedAt: new Date().toISOString() } : sample,
+        sample.id === id ? nextSample : sample,
       ),
     );
-  }, []);
+    void saveSample(nextSample);
+  }, [phase2, saveSample]);
+
+  const saveMonitoring = useCallback(
+    async (record) => {
+      try {
+        await fetchJson("/api/samples", {
+          method: "PUT",
+          body: JSON.stringify({ kind: "monitoring", record }),
+        });
+        await refreshSamples();
+      } catch (error) {
+        setSyncError(error.message);
+        await refreshSamples();
+      }
+    },
+    [refreshSamples],
+  );
 
   const updateMonitoring = useCallback((id, patch) => {
+    const currentRecord = monitoring.find((record) => record.id === id);
+    if (!currentRecord) return;
+    const nextRecord = {
+      ...currentRecord,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
     setMonitoring((current) =>
       current.map((record) =>
-        record.id === id ? { ...record, ...patch, updatedAt: new Date().toISOString() } : record,
+        record.id === id ? nextRecord : record,
       ),
     );
-  }, []);
+    void saveMonitoring(nextRecord);
+  }, [monitoring, saveMonitoring]);
 
   const selectSample = useCallback((id) => {
     setActivePhase("phase2");
@@ -362,22 +419,53 @@ function DashboardProvider({ children }) {
   }, []);
 
   const rebuildLayout = useCallback(() => {
-    setLayout(buildBalancedLayout(phase2));
-  }, [phase2]);
+    const nextLayout = buildBalancedLayout(phase2);
+    const positionById = new Map(nextLayout.map((id, index) => [id, index]));
+    const nextSamples = phase2.map((sample) => {
+      const positionIndex = positionById.get(sample.id);
+      return {
+        ...sample,
+        positionIndex,
+        chamberRow: Math.floor(positionIndex / 12),
+        chamberCol: positionIndex % 12,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+    setLayout(nextLayout);
+    setPhase2(nextSamples);
+    void fetchJson("/api/samples", {
+      method: "PUT",
+      body: JSON.stringify({
+        layout: nextLayout.map((id, positionIndex) => ({ id, positionIndex })),
+      }),
+    })
+      .then(refreshSamples)
+      .catch((error) => {
+        setSyncError(error.message);
+        void refreshSamples();
+      });
+  }, [phase2, refreshSamples]);
 
   const addLog = useCallback((author, message) => {
     const trimmed = message.trim();
     if (!trimmed) return;
-    setLogs((current) => [
-      {
-        id: createId(),
-        author: author.trim() || "팀원",
-        message: trimmed,
-        createdAt: new Date().toISOString(),
-      },
-      ...current,
-    ]);
-  }, []);
+    const optimisticMessage = {
+      id: createId(),
+      author: author.trim() || "팀원",
+      message: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    setLogs((current) => [optimisticMessage, ...current]);
+    void fetchJson("/api/chat", {
+      method: "POST",
+      body: JSON.stringify(optimisticMessage),
+    })
+      .then(refreshChat)
+      .catch((error) => {
+        setSyncError(error.message);
+        void refreshChat();
+      });
+  }, [refreshChat]);
 
   const value = useMemo(
     () => ({
@@ -391,9 +479,8 @@ function DashboardProvider({ children }) {
       logs,
       selectedId,
       flashId,
+      syncError,
       updatePhase1,
-      addPhase1Record,
-      deletePhase1Record,
       updatePhase2,
       updateMonitoring,
       selectSample,
@@ -410,9 +497,8 @@ function DashboardProvider({ children }) {
       logs,
       selectedId,
       flashId,
+      syncError,
       updatePhase1,
-      addPhase1Record,
-      deletePhase1Record,
       updatePhase2,
       updateMonitoring,
       selectSample,
@@ -510,7 +596,7 @@ function KpiCard({ label, value, hint, icon: Icon }) {
 function Phase1Kpis() {
   const { phase1 } = useDashboard();
   const stats = useMemo(() => {
-    const complete = phase1.filter((record) => record.status === "수확완료").length;
+    const complete = phase1.filter((record) => numberOrNull(record.finalWeight) !== null).length;
     const contaminated = phase1.reduce(
       (sum, record) => sum + (numberOrNull(record.contaminatedCount) ?? 0),
       0,
@@ -529,7 +615,7 @@ function Phase1Kpis() {
 
   return (
     <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <KpiCard label="Phase 1 진행률" value={`${stats.progress}%`} hint="수확완료 배치 기준" icon={CheckCircle2} />
+      <KpiCard label="Phase 1 진행률" value={`${stats.progress}%`} hint="최종무게 입력 회차 기준" icon={CheckCircle2} />
       <KpiCard label="평균 증식률" value={`${stats.avgRate.toFixed(2)}x`} hint="최종무게 / 초기무게" icon={BarChart3} />
       <KpiCard label="총 오염 용기" value={`${stats.contaminated}개`} hint="전체 배치 합산" icon={AlertTriangle} />
       <KpiCard label="평균 최종무게" value={stats.avgFinal.toFixed(2)} hint="숫자 입력 배치 기준" icon={FlaskConical} />
@@ -665,7 +751,7 @@ function StatusSelect({ value, options, onChange, disabled }) {
 function Phase1Chart() {
   const { phase1 } = useDashboard();
   const data = phase1.map((record) => ({
-    batch: record.id.replace("P1_BATCH_", "B"),
+    batch: record.id.replace("CYCLE_", "C"),
     rate: Number((getRate(record.initialWeight, record.finalWeight) ?? 0).toFixed(2)),
   }));
 
@@ -718,7 +804,7 @@ function ChartCard({ title, data, dataKey, xKey }) {
 }
 
 function Phase1Table() {
-  const { phase1, updatePhase1, addPhase1Record, deletePhase1Record } = useDashboard();
+  const { phase1, updatePhase1 } = useDashboard();
 
   return (
     <section className="rounded-lg border border-zinc-200 bg-white shadow-sm">
@@ -730,32 +816,18 @@ function Phase1Table() {
             <p className="text-xs text-zinc-500">6~7월 출발 모재 확보를 위한 계대 배치별 증식률과 오염률을 기록합니다.</p>
           </div>
         </div>
-        <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-lime-300 bg-lime-50 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-lime-100"
-          onClick={addPhase1Record}
-          type="button"
-        >
-          <Plus className="h-4 w-4" />
-          배치 추가
-        </button>
       </div>
       <div className="max-h-[620px] overflow-auto">
-        <table className="w-full min-w-[1240px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
           <thead className="sticky top-0 z-10 bg-zinc-50 text-xs text-zinc-500">
             <tr>
               {[
-                "Batch ID",
-                "주기",
-                "상태",
-                "입식일",
-                "수확일",
-                "입식 용기 수",
+                "회차 ID",
                 "초기무게_g",
                 "최종무게_g",
                 "증식률",
                 "오염 용기 수",
                 "비고",
-                "",
               ].map((header) => (
                 <th className="border-b border-zinc-200 px-3 py-3 font-semibold" key={header}>
                   {header}
@@ -767,21 +839,6 @@ function Phase1Table() {
             {phase1.map((record) => (
               <tr className="border-b border-zinc-100 hover:bg-lime-50/50" key={record.id}>
                 <td className="px-3 py-2 font-semibold text-zinc-950">{record.id}</td>
-                <td className="px-3 py-2">
-                  <TextInput value={record.cycle} placeholder="2026-06 1차" onChange={(cycle) => updatePhase1(record.id, { cycle })} />
-                </td>
-                <td className="px-3 py-2">
-                  <StatusSelect value={record.status} options={PHASE1_STATUSES} onChange={(status) => updatePhase1(record.id, { status })} />
-                </td>
-                <td className="px-3 py-2">
-                  <TextInput className="w-32" value={record.startDate} placeholder="2026-06-01" onChange={(startDate) => updatePhase1(record.id, { startDate })} />
-                </td>
-                <td className="px-3 py-2">
-                  <TextInput className="w-32" value={record.harvestDate} placeholder="2026-06-14" onChange={(harvestDate) => updatePhase1(record.id, { harvestDate })} />
-                </td>
-                <td className="px-3 py-2">
-                  <NumericInput value={record.vesselCount} label={numericLabels.vesselCount} onChange={(vesselCount) => updatePhase1(record.id, { vesselCount })} />
-                </td>
                 <td className="px-3 py-2">
                   <NumericInput value={record.initialWeight} label={numericLabels.initialWeight} onChange={(initialWeight) => updatePhase1(record.id, { initialWeight })} />
                 </td>
@@ -796,16 +853,6 @@ function Phase1Table() {
                 </td>
                 <td className="px-3 py-2">
                   <TextInput className="w-64" value={record.notes} placeholder="특이사항" onChange={(notes) => updatePhase1(record.id, { notes })} />
-                </td>
-                <td className="px-3 py-2">
-                  <button
-                    className="rounded-md p-2 text-zinc-400 transition hover:bg-rose-50 hover:text-rose-600"
-                    onClick={() => deletePhase1Record(record.id)}
-                    title="삭제"
-                    type="button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </td>
               </tr>
             ))}
@@ -1222,26 +1269,16 @@ function downloadPhase1Csv(records) {
   downloadCsv(
     `wasabi_phase1_mass_propagation_${new Date().toISOString().slice(0, 10)}.csv`,
     [
-      "Batch_ID",
-      "주기",
-      "상태",
-      "입식일",
-      "수확일",
-      "입식_용기_수",
-      "초기무게_g",
-      "최종무게_g",
-      "증식률",
-      "오염_용기_수",
-      "비고",
-      "updatedAt",
+      "sub_id",
+      "initial_weight_g",
+      "final_weight_g",
+      "multiplication_rate",
+      "contaminated_count",
+      "notes",
+      "updated_at",
     ],
     records.map((record) => [
       record.id,
-      record.cycle,
-      record.status,
-      record.startDate,
-      record.harvestDate,
-      record.vesselCount,
       record.initialWeight,
       record.finalWeight,
       getRate(record.initialWeight, record.finalWeight)?.toFixed(4) ?? "",
@@ -1380,13 +1417,20 @@ function Phase2View() {
 }
 
 function DashboardShell() {
-  const { activePhase } = useDashboard();
+  const { activePhase, syncError } = useDashboard();
 
   return (
     <div className="min-h-screen">
       <Header />
       <main className="mx-auto grid max-w-[1760px] gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div>{activePhase === "phase1" ? <Phase1View /> : <Phase2View />}</div>
+        <div className="space-y-4">
+          {syncError ? (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              DB 동기화 오류: {syncError}
+            </div>
+          ) : null}
+          {activePhase === "phase1" ? <Phase1View /> : <Phase2View />}
+        </div>
         <LogBoard />
       </main>
     </div>
