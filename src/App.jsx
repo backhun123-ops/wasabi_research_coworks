@@ -756,21 +756,21 @@ function Header() {
         : "연구 제안: 논문·알고리즘 토론";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#C7C8CC] bg-[#F2EFE5]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[#A2B29F] bg-[#BDD2B6]/95 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1760px] flex-col gap-4 px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-black bg-black">
-            <Sprout className="h-6 w-6 text-[#F2EFE5]" />
+            <Sprout className="h-6 w-6 text-[#BDD2B6]" />
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-normal text-black sm:text-2xl">{title}</h1>
-            <p className="text-sm text-[#6F7075]">
+            <p className="text-sm text-[#4F604B]">
               CNU-RISE 와사비 조직배양체 생산량 증대 프로젝트 데이터 보드
             </p>
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="inline-flex rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] p-1">
+          <div className="inline-flex rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-1">
             {[
               ["phase1", "Phase 1 증식"],
               ["phase2", "Phase 2 본실험"],
@@ -781,7 +781,7 @@ function Header() {
                   "rounded-md px-3 py-2 text-sm font-medium transition",
                   activePhase === id
                     ? "border border-black bg-black text-white shadow-none"
-                    : "text-[#6F7075] hover:text-black",
+                    : "text-[#4F604B] hover:text-black",
                 ].join(" ")}
                 key={id}
                 onClick={() => setActivePhase(id)}
@@ -813,15 +813,15 @@ function Header() {
 
 function KpiCard({ label, value, hint, icon: Icon }) {
   return (
-    <article className="rounded-xl border border-[#E3E1D9] bg-white p-4">
+    <article className="rounded-xl border border-[#BDD2B6] bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-[#6F7075]">{label}</p>
+          <p className="text-sm text-[#4F604B]">{label}</p>
           <p className="mt-2 text-3xl font-semibold tracking-normal text-black">{value}</p>
-          <p className="mt-1 text-xs text-[#8C8D92]">{hint}</p>
+          <p className="mt-1 text-xs text-[#5E6F5A]">{hint}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#C7C8CC] bg-[#F2EFE5]">
-          <Icon className="h-5 w-5 text-[#6F7075]" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#A2B29F] bg-[#BDD2B6]">
+          <Icon className="h-5 w-5 text-[#4F604B]" />
         </div>
       </div>
     </article>
@@ -902,21 +902,21 @@ function GuidePanel({ phase }) {
   const guides = phase === "phase1" ? phase1Guides : phase2Guides;
 
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white p-4">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Bell className="h-5 w-5 text-[#6F7075]" />
+        <Bell className="h-5 w-5 text-[#4F604B]" />
         <div>
           <h2 className="text-base font-semibold text-black">
             {phase === "phase1" ? "대량 증식 입력 원칙" : "본실험 세팅 가이드"}
           </h2>
-          <p className="text-xs text-[#6F7075]">공지 내용을 작업 화면용 체크 규칙으로 요약했습니다.</p>
+          <p className="text-xs text-[#4F604B]">공지 내용을 작업 화면용 체크 규칙으로 요약했습니다.</p>
         </div>
       </div>
       <div className="grid gap-3 lg:grid-cols-4">
         {guides.map(([title, body]) => (
-          <article className="rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] p-3" key={title}>
+          <article className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-3" key={title}>
             <h3 className="text-sm font-semibold text-black">{title}</h3>
-            <p className="mt-2 text-xs leading-relaxed text-[#4B4B4B]">{body}</p>
+            <p className="mt-2 text-xs leading-relaxed text-[#344030]">{body}</p>
           </article>
         ))}
       </div>
@@ -940,7 +940,7 @@ function NumericInput({ value, disabled, label, onChange }) {
   return (
     <div className="min-w-28">
       <input
-        className="w-full rounded-md border border-[#C7C8CC] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#B4B4B8] focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+        className="w-full rounded-md border border-[#A2B29F] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
         disabled={disabled}
         inputMode="decimal"
         onChange={handleChange}
@@ -956,7 +956,7 @@ function NumericInput({ value, disabled, label, onChange }) {
 function TextInput({ value, placeholder, onChange, className = "w-44", disabled }) {
   return (
     <input
-      className={`${className} rounded-md border border-[#C7C8CC] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#B4B4B8] focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]`}
+      className={`${className} rounded-md border border-[#A2B29F] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]`}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -969,7 +969,7 @@ function TextInput({ value, placeholder, onChange, className = "w-44", disabled 
 function StatusSelect({ value, options, onChange, disabled }) {
   return (
     <select
-      className="w-28 rounded-full border border-[#C7C8CC] bg-white px-2 py-1 text-xs font-semibold text-[#303030] outline-none transition focus:ring-2 focus:ring-[#E3E1D9] disabled:bg-[#E3E1D9]"
+      className="w-28 rounded-full border border-[#A2B29F] bg-white px-2 py-1 text-xs font-semibold text-[#1F261D] outline-none transition focus:ring-2 focus:ring-[#BDD2B6] disabled:bg-[#BDD2B6]"
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -1012,21 +1012,21 @@ function Phase2Chart() {
 
 function ChartCard({ title, data, dataKey, xKey }) {
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white p-4">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white p-4">
       <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-[#6F7075]" />
+        <BarChart3 className="h-5 w-5 text-[#4F604B]" />
         <h2 className="text-base font-semibold text-black">{title}</h2>
       </div>
       <div className="h-64">
         <ResponsiveContainer height="100%" width="100%">
           <BarChart data={data}>
-            <CartesianGrid stroke="rgba(199, 200, 204, 0.55)" vertical={false} />
-            <XAxis dataKey={xKey} stroke="#b4b4b8" tick={{ fontSize: 12 }} />
-            <YAxis stroke="#b4b4b8" tick={{ fontSize: 12 }} />
+            <CartesianGrid stroke="rgba(162, 178, 159, 0.55)" vertical={false} />
+            <XAxis dataKey={xKey} stroke="#a2b29f" tick={{ fontSize: 12 }} />
+            <YAxis stroke="#a2b29f" tick={{ fontSize: 12 }} />
             <Tooltip
               contentStyle={{
-                background: "#f2efe5",
-                border: "1px solid #c7c8cc",
+                background: "#bdd2b6",
+                border: "1px solid #a2b29f",
                 borderRadius: 8,
                 color: "#18181b",
               }}
@@ -1043,19 +1043,19 @@ function Phase1Table() {
   const { phase1, updatePhase1, isAuthenticated } = useDashboard();
 
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white">
-      <div className="flex flex-col gap-3 border-b border-[#E3E1D9] p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white">
+      <div className="flex flex-col gap-3 border-b border-[#BDD2B6] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-[#6F7075]" />
+          <ClipboardList className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">Phase 1 대량 증식 기록 테이블</h2>
-            <p className="text-xs text-[#6F7075]">6~7월 출발 모재 확보를 위한 계대 배치별 증식률과 오염률을 기록합니다.</p>
+            <p className="text-xs text-[#4F604B]">6~7월 출발 모재 확보를 위한 계대 배치별 증식률과 오염률을 기록합니다.</p>
           </div>
         </div>
       </div>
       <div className="max-h-[620px] overflow-auto">
         <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-white text-xs text-[#6F7075]">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-[#4F604B]">
             <tr>
               {[
                 "회차 ID",
@@ -1065,7 +1065,7 @@ function Phase1Table() {
                 "오염 용기 수",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-[#E3E1D9] px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-[#BDD2B6] px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -1073,7 +1073,7 @@ function Phase1Table() {
           </thead>
           <tbody>
             {phase1.map((record) => (
-              <tr className="border-b border-[#E3E1D9] hover:bg-[#F2EFE5]" key={record.id}>
+              <tr className="border-b border-[#BDD2B6] hover:bg-[#BDD2B6]" key={record.id}>
                 <td className="px-3 py-2 font-semibold text-black">{record.id}</td>
                 <td className="px-3 py-2">
                   <NumericInput disabled={!isAuthenticated} value={record.initialWeight} label={numericLabels.initialWeight} onChange={(initialWeight) => updatePhase1(record.id, { initialWeight })} />
@@ -1103,10 +1103,10 @@ function getPpfdClass(ppfd, contaminated, selected) {
   if (contaminated) return "border-rose-200 bg-rose-50 text-rose-700";
   if (selected) return "border-black bg-black text-white";
   const scale = {
-    30: "border-[#E3E1D9] bg-[#F2EFE5] text-[#8C8D92]",
-    50: "border-[#C7C8CC] bg-[#E3E1D9] text-[#6F7075]",
-    80: "border-[#B4B4B8] bg-[#C7C8CC] text-[#303030]",
-    120: "border-black bg-[#B4B4B8] text-black",
+    30: "border-[#BDD2B6] bg-[#BDD2B6] text-[#5E6F5A]",
+    50: "border-[#A2B29F] bg-[#BDD2B6] text-[#4F604B]",
+    80: "border-[#A2B29F] bg-[#A2B29F] text-[#1F261D]",
+    120: "border-black bg-[#A2B29F] text-black",
   };
   return scale[ppfd];
 }
@@ -1115,17 +1115,17 @@ function ChamberGrid() {
   const { layout, phase2Map, selectedId, flashId, selectSample, rebuildLayout, isAuthenticated } = useDashboard();
 
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white p-4">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white p-4">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Grid3X3 className="h-5 w-5 text-[#6F7075]" />
+          <Grid3X3 className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">챔버 균형 배치도</h2>
-            <p className="text-xs text-[#6F7075]">12 × 12 선반, 인접 PPFD 중복 없이 교대 배치</p>
+            <p className="text-xs text-[#4F604B]">12 × 12 선반, 인접 PPFD 중복 없이 교대 배치</p>
           </div>
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm font-medium text-[#303030] transition hover:bg-[#F2EFE5] disabled:cursor-not-allowed disabled:border-[#C7C8CC] disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm font-medium text-[#1F261D] transition hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:border-[#A2B29F] disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated}
           onClick={rebuildLayout}
           type="button"
@@ -1142,7 +1142,7 @@ function ChamberGrid() {
           return (
             <button
               className={[
-                "relative aspect-square min-h-0 rounded-md border p-1 text-[10px] font-semibold leading-tight transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#B4B4B8]",
+                "relative aspect-square min-h-0 rounded-md border p-1 text-[10px] font-semibold leading-tight transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#A2B29F]",
                 getPpfdClass(sample?.ppfd, contaminated, selected),
                 flashId === id ? "cell-flash" : "",
               ].join(" ")}
@@ -1158,7 +1158,7 @@ function ChamberGrid() {
           );
         })}
       </div>
-      <div className="mt-4 flex flex-wrap gap-2 text-xs text-[#6F7075]">
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-[#4F604B]">
         {PPFD_LEVELS.map((ppfd) => (
           <span className="inline-flex items-center gap-1" key={ppfd}>
             <span className={["h-3 w-3 rounded-sm border", getPpfdClass(ppfd, false, false)].join(" ")} />
@@ -1191,19 +1191,19 @@ function Phase2Table() {
   }, [phase2, query]);
 
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white">
-      <div className="flex flex-col gap-3 border-b border-[#E3E1D9] p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white">
+      <div className="flex flex-col gap-3 border-b border-[#BDD2B6] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-[#6F7075]" />
+          <ClipboardList className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">Phase 2 광질·광량 본실험 마스터 테이블</h2>
-            <p className="text-xs text-[#6F7075]">24개 광조건 × 반복 6개, 오염 샘플은 수치 입력이 잠깁니다.</p>
+            <p className="text-xs text-[#4F604B]">24개 광조건 × 반복 6개, 오염 샘플은 수치 입력이 잠깁니다.</p>
           </div>
         </div>
         <label className="relative w-full lg:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8C8D92]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5E6F5A]" />
           <input
-            className="w-full rounded-lg border border-[#C7C8CC] bg-white py-2 pl-9 pr-3 text-sm text-black outline-none transition placeholder:text-[#B4B4B8] focus:border-black focus:ring-1 focus:ring-[#E3E1D9]"
+            className="w-full rounded-lg border border-[#A2B29F] bg-white py-2 pl-9 pr-3 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="EXP_05_3 검색"
             value={query}
@@ -1212,7 +1212,7 @@ function Phase2Table() {
       </div>
       <div className="max-h-[680px] overflow-auto">
         <table className="w-full min-w-[1460px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-white text-xs text-[#6F7075]">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-[#4F604B]">
             <tr>
               {[
                 "ID",
@@ -1235,7 +1235,7 @@ function Phase2Table() {
                 "생체중_FW (g)",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-[#E3E1D9] px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-[#BDD2B6] px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -1247,9 +1247,9 @@ function Phase2Table() {
               return (
                 <tr
                   className={[
-                    "cursor-pointer border-b border-[#E3E1D9] transition hover:bg-[#F2EFE5]",
+                    "cursor-pointer border-b border-[#BDD2B6] transition hover:bg-[#BDD2B6]",
                     contaminated ? "bg-red-50/60" : "bg-white",
-                    selectedId === sample.id ? "outline outline-1 outline-[#B4B4B8]" : "",
+                    selectedId === sample.id ? "outline outline-1 outline-[#A2B29F]" : "",
                     flashId === sample.id ? "row-flash" : "",
                   ].join(" ")}
                   key={sample.id}
@@ -1267,11 +1267,11 @@ function Phase2Table() {
                       onChange={(status) => updatePhase2(sample.id, { status })}
                     />
                   </td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample.rb}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample.fr}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample.ppfd}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample.photoperiod}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample.repeat}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample.rb}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample.fr}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample.ppfd}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample.photoperiod}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample.repeat}</td>
                   {[
                     "gluco",
                     "sinigrin",
@@ -1328,18 +1328,18 @@ function Phase2MonitoringTable() {
   }, [monitoring, week, query]);
 
   return (
-    <section className="rounded-xl border border-[#E3E1D9] bg-white">
-      <div className="flex flex-col gap-3 border-b border-[#E3E1D9] p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-[#BDD2B6] bg-white">
+      <div className="flex flex-col gap-3 border-b border-[#BDD2B6] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-[#6F7075]" />
+          <ClipboardList className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">2주 간격 생장 모니터링</h2>
-            <p className="text-xs text-[#6F7075]">0/2/4/6/8주차 회차별 FW, 오염 여부, 특이사항을 long-format CSV로 저장합니다.</p>
+            <p className="text-xs text-[#4F604B]">0/2/4/6/8주차 회차별 FW, 오염 여부, 특이사항을 long-format CSV로 저장합니다.</p>
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <select
-            className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9]"
+            className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
             onChange={(event) => setWeek(Number(event.target.value))}
             value={week}
           >
@@ -1350,9 +1350,9 @@ function Phase2MonitoringTable() {
             ))}
           </select>
           <label className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8C8D92]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5E6F5A]" />
             <input
-              className="w-full rounded-lg border border-[#C7C8CC] bg-white py-2 pl-9 pr-3 text-sm text-black outline-none transition placeholder:text-[#B4B4B8] focus:border-black focus:ring-1 focus:ring-[#E3E1D9]"
+              className="w-full rounded-lg border border-[#A2B29F] bg-white py-2 pl-9 pr-3 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="EXP_05_3 검색"
               value={query}
@@ -1362,7 +1362,7 @@ function Phase2MonitoringTable() {
       </div>
       <div className="max-h-[520px] overflow-auto">
         <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-white text-xs text-[#6F7075]">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-[#4F604B]">
             <tr>
               {[
                 "회차",
@@ -1377,7 +1377,7 @@ function Phase2MonitoringTable() {
                 "오염 여부",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-[#E3E1D9] px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-[#BDD2B6] px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -1388,16 +1388,16 @@ function Phase2MonitoringTable() {
               const sample = phase2Map.get(record.sampleId);
               return (
                 <tr
-                  className="cursor-pointer border-b border-[#E3E1D9] bg-white transition hover:bg-[#F2EFE5]"
+                  className="cursor-pointer border-b border-[#BDD2B6] bg-white transition hover:bg-[#BDD2B6]"
                   key={record.id}
                   onClick={() => selectSample(record.sampleId)}
                 >
-                  <td className="px-3 py-2 text-[#4B4B4B]">{record.label}</td>
+                  <td className="px-3 py-2 text-[#344030]">{record.label}</td>
                   <td className="px-3 py-2 font-semibold text-black">{record.sampleId}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample?.rb}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample?.fr}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample?.ppfd}</td>
-                  <td className="px-3 py-2 text-[#4B4B4B]">{sample?.photoperiod ?? PHOTOPERIOD}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample?.rb}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample?.fr}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample?.ppfd}</td>
+                  <td className="px-3 py-2 text-[#344030]">{sample?.photoperiod ?? PHOTOPERIOD}</td>
                   <td className="px-3 py-2">
                     <TextInput
                       disabled={!isAuthenticated}
@@ -1460,15 +1460,15 @@ function LogBoard() {
   }
 
   return (
-    <aside className="rounded-xl border border-[#E3E1D9] bg-white p-4 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)]">
+    <aside className="rounded-xl border border-[#BDD2B6] bg-white p-4 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)]">
       <div className="mb-4 flex items-center gap-2">
-        <MessageSquareText className="h-5 w-5 text-[#6F7075]" />
+        <MessageSquareText className="h-5 w-5 text-[#4F604B]" />
         <h2 className="text-base font-semibold text-black">연구실 로그보드</h2>
       </div>
       <div className="mb-3 grid grid-cols-1 gap-2">
         {PRESET_MESSAGES.map((preset) => (
           <button
-            className="rounded-lg border border-[#C7C8CC] bg-[#F2EFE5] px-3 py-2 text-left text-xs text-[#303030] transition hover:border-[#B4B4B8] hover:bg-[#E3E1D9] disabled:cursor-not-allowed disabled:text-[#8C8D92]"
+            className="rounded-lg border border-[#A2B29F] bg-[#BDD2B6] px-3 py-2 text-left text-xs text-[#1F261D] transition hover:border-[#A2B29F] hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:text-[#5E6F5A]"
             disabled={!isAuthenticated}
             key={preset}
             onClick={() => setMessage((current) => (current ? `${current} ${preset}` : preset))}
@@ -1479,18 +1479,18 @@ function LogBoard() {
         ))}
       </div>
       <div className="grid gap-2">
-        <div className="rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] px-3 py-2 text-sm font-semibold text-black">
+        <div className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] px-3 py-2 text-sm font-semibold text-black">
           작성자: {currentUser ?? "읽기 전용"}
         </div>
         <textarea
-          className="min-h-24 resize-y rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none transition focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+          className="min-h-24 resize-y rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none transition focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated}
           onChange={(event) => setMessage(event.target.value)}
           placeholder="인수인계 내용을 입력"
           value={message}
         />
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated || !message.trim()}
           onClick={send}
           type="button"
@@ -1501,12 +1501,12 @@ function LogBoard() {
       </div>
       <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
         {logs.map((log) => (
-          <article className="rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] p-3" key={log.id}>
+          <article className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-3" key={log.id}>
             <div className="mb-1 flex items-center justify-between gap-3 text-xs">
               <span className="font-semibold text-black">{log.author}</span>
-              <time className="text-[#8C8D92]">{formatDateTime(log.createdAt)}</time>
+              <time className="text-[#5E6F5A]">{formatDateTime(log.createdAt)}</time>
             </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#303030]">{log.message}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#1F261D]">{log.message}</p>
           </article>
         ))}
       </div>
@@ -1736,21 +1736,21 @@ function ResearchProposalView() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-xl border border-[#E3E1D9] bg-white p-4">
+      <section className="rounded-xl border border-[#BDD2B6] bg-white p-4">
         <div className="mb-4 flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-[#6F7075]" />
+          <ClipboardList className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">연구 제안 보드</h2>
-            <p className="text-xs text-[#6F7075]">
+            <p className="text-xs text-[#4F604B]">
               논문 후보, RSM/머신러닝 알고리즘, 후속 실험 아이디어를 팀 공용으로 기록합니다.
             </p>
           </div>
         </div>
         <form className="grid gap-3 lg:grid-cols-2" onSubmit={submitProposal}>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             분류
             <select
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("category", event.target.value)}
               value={draft.category}
@@ -1762,50 +1762,50 @@ function ResearchProposalView() {
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             제안 제목
             <input
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("title", event.target.value)}
               placeholder="예: RSM + Random Forest 비교 분석"
               value={draft.title}
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             논문명
             <input
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("paperTitle", event.target.value)}
               placeholder="참고 논문 제목"
               value={draft.paperTitle}
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             논문/자료 링크
             <input
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("paperUrl", event.target.value)}
               placeholder="https://..."
               value={draft.paperUrl}
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B] lg:col-span-2">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030] lg:col-span-2">
             알고리즘 후보
             <input
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("algorithm", event.target.value)}
               placeholder="RSM, Random Forest, XGBoost, Gaussian Process, Bayesian Optimization 등"
               value={draft.algorithm}
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B] lg:col-span-2">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030] lg:col-span-2">
             토론 메모
             <textarea
-              className="min-h-28 rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+              className="min-h-28 rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("discussion", event.target.value)}
               placeholder="왜 필요한지, 어떤 데이터 컬럼을 쓸지, 검증 방법은 무엇인지 기록"
@@ -1813,7 +1813,7 @@ function ResearchProposalView() {
             />
           </label>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92] lg:col-span-2"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A] lg:col-span-2"
             disabled={!canSubmit}
             type="submit"
           >
@@ -1823,40 +1823,40 @@ function ResearchProposalView() {
         </form>
       </section>
 
-      <section className="rounded-xl border border-[#E3E1D9] bg-white">
-        <div className="flex items-center justify-between border-b border-[#E3E1D9] p-4">
+      <section className="rounded-xl border border-[#BDD2B6] bg-white">
+        <div className="flex items-center justify-between border-b border-[#BDD2B6] p-4">
           <div>
             <h2 className="text-base font-semibold text-black">공유 제안 목록</h2>
-            <p className="text-xs text-[#6F7075]">총 {proposals.length}건</p>
+            <p className="text-xs text-[#4F604B]">총 {proposals.length}건</p>
           </div>
         </div>
         <div className="grid gap-3 p-4">
           {proposals.length === 0 ? (
-            <div className="rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] p-4 text-sm text-[#6F7075]">
+            <div className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-4 text-sm text-[#4F604B]">
               아직 등록된 연구 제안이 없습니다.
             </div>
           ) : null}
           {proposals.map((proposal) => (
-            <article className="rounded-lg border border-[#E3E1D9] bg-[#F2EFE5] p-4" key={proposal.id}>
+            <article className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-4" key={proposal.id}>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#C7C8CC] bg-white px-2 py-1 text-xs font-semibold text-[#303030]">
+                    <span className="rounded-full border border-[#A2B29F] bg-white px-2 py-1 text-xs font-semibold text-[#1F261D]">
                       {proposal.category}
                     </span>
-                    <span className="text-xs text-[#8C8D92]">
+                    <span className="text-xs text-[#5E6F5A]">
                       {proposal.author} · {formatDateTime(proposal.updatedAt)}
                     </span>
                   </div>
                   <h3 className="text-sm font-semibold text-black">{proposal.title || "제목 없음"}</h3>
                   {proposal.paperTitle ? (
-                    <p className="text-sm text-[#4B4B4B]">논문: {proposal.paperTitle}</p>
+                    <p className="text-sm text-[#344030]">논문: {proposal.paperTitle}</p>
                   ) : null}
                   {proposal.algorithm ? (
-                    <p className="text-sm text-[#4B4B4B]">알고리즘: {proposal.algorithm}</p>
+                    <p className="text-sm text-[#344030]">알고리즘: {proposal.algorithm}</p>
                   ) : null}
                   {proposal.paperUrl ? (
-                    <p className="break-all text-xs text-[#6F7075]">{proposal.paperUrl}</p>
+                    <p className="break-all text-xs text-[#4F604B]">{proposal.paperUrl}</p>
                   ) : null}
                 </div>
                 <StatusSelect
@@ -1867,7 +1867,7 @@ function ResearchProposalView() {
                 />
               </div>
               <textarea
-                className="mt-3 min-h-24 w-full rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9] disabled:cursor-not-allowed disabled:bg-[#E3E1D9] disabled:text-[#8C8D92]"
+                className="mt-3 min-h-24 w-full rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
                 disabled={!isAuthenticated}
                 onChange={(event) => updateProposal(proposal.id, { discussion: event.target.value })}
                 value={proposal.discussion}
@@ -1928,23 +1928,23 @@ function AuthModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/25 px-4 backdrop-blur-sm">
       <form
-        className="w-full max-w-sm rounded-xl border border-[#E3E1D9] bg-white p-5 shadow-xl"
+        className="w-full max-w-sm rounded-xl border border-[#BDD2B6] bg-white p-5 shadow-xl"
         onSubmit={submit}
       >
         <div className="mb-4 flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-[#6F7075]" />
+          <CheckCircle2 className="h-5 w-5 text-[#4F604B]" />
           <div>
             <h2 className="text-base font-semibold text-black">연구원 접속 확인</h2>
-            <p className="text-xs text-[#6F7075]">
+            <p className="text-xs text-[#4F604B]">
               연구원 이름을 선택하고 접속 비밀번호를 입력하세요.
             </p>
           </div>
         </div>
         <div className="grid gap-3">
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             연구원
             <select
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
               onChange={(event) => setSelectedUser(event.target.value)}
               value={selectedUser}
             >
@@ -1955,10 +1955,10 @@ function AuthModal() {
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#4B4B4B]">
+          <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             접속 비밀번호
             <input
-              className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#E3E1D9]"
+              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
               onChange={(event) => setPassword(event.target.value)}
               placeholder="비밀번호"
               type="password"
@@ -1973,7 +1973,7 @@ function AuthModal() {
             접속
           </button>
           <button
-            className="rounded-lg border border-[#C7C8CC] bg-white px-3 py-2 text-sm font-semibold text-[#4B4B4B] transition hover:bg-[#F2EFE5]"
+            className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm font-semibold text-[#344030] transition hover:bg-[#BDD2B6]"
             onClick={enterReadOnlyMode}
             type="button"
           >
@@ -1993,7 +1993,7 @@ function DashboardShell() {
       <Header />
       <main className="mx-auto grid max-w-[1760px] gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#E3E1D9] bg-white px-4 py-3 text-sm text-[#4B4B4B]">
+          <div className="rounded-xl border border-[#BDD2B6] bg-white px-4 py-3 text-sm text-[#344030]">
             접속 상태:{" "}
             <span className="font-semibold text-black">
               {isAuthenticated ? `${currentUser} 연구원` : "읽기 전용"}
@@ -2028,4 +2028,5 @@ function App() {
 }
 
 export default App;
+
 

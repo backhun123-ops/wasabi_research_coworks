@@ -18,8 +18,8 @@ body {
   min-width: 320px;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(242, 239, 229, 0.95), transparent 32rem),
-    linear-gradient(135deg, #f2efe5 0%, #e3e1d9 54%, #c7c8cc 100%);
+    radial-gradient(circle at top left, rgba(189, 210, 182, 0.7), transparent 32rem),
+    linear-gradient(135deg, #f7faf5 0%, #bdd2b6 56%, #a2b29f 100%);
   color: #18181b;
 }
 
@@ -36,16 +36,16 @@ select {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(242, 239, 229, 0.9);
+  background: rgba(189, 210, 182, 0.35);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(199, 200, 204, 0.9);
+  background: rgba(162, 178, 159, 0.75);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 180, 184, 1);
+  background: rgba(132, 150, 129, 1);
 }
 
 .row-flash {
@@ -58,10 +58,10 @@ select {
 
 @keyframes rowFlash {
   0% {
-    box-shadow: inset 0 0 0 999px rgba(199, 200, 204, 0.28);
+    box-shadow: inset 0 0 0 999px rgba(189, 210, 182, 0.32);
   }
   100% {
-    box-shadow: inset 0 0 0 999px rgba(199, 200, 204, 0);
+    box-shadow: inset 0 0 0 999px rgba(189, 210, 182, 0);
   }
 }
 
