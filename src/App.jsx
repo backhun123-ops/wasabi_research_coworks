@@ -668,11 +668,11 @@ function Header() {
       : "Phase 2: 광질·광량 정밀제어 본실험";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1760px] flex-col gap-4 px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-lime-200 bg-lime-50">
-            <Sprout className="h-6 w-6 text-lime-600" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50">
+            <Sprout className="h-6 w-6 text-zinc-600" />
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-normal text-zinc-950 sm:text-2xl">{title}</h1>
@@ -682,7 +682,7 @@ function Header() {
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-100 p-1">
+          <div className="inline-flex rounded-lg border border-zinc-100 bg-zinc-50 p-1">
             {[
               ["phase1", "Phase 1 증식"],
               ["phase2", "Phase 2 본실험"],
@@ -691,7 +691,7 @@ function Header() {
                 className={[
                   "rounded-md px-3 py-2 text-sm font-medium transition",
                   activePhase === id
-                    ? "bg-white text-zinc-950 shadow-sm"
+                    ? "border border-zinc-200 bg-white text-zinc-950 shadow-none"
                     : "text-zinc-500 hover:text-zinc-900",
                 ].join(" ")}
                 key={id}
@@ -703,7 +703,7 @@ function Header() {
             ))}
           </div>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-lime-200 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700"
             onClick={() =>
               activePhase === "phase1"
                 ? downloadPhase1Csv(phase1)
@@ -722,15 +722,15 @@ function Header() {
 
 function KpiCard({ label, value, hint, icon: Icon }) {
   return (
-    <article className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <article className="rounded-xl border border-zinc-100 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm text-zinc-500">{label}</p>
           <p className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">{value}</p>
           <p className="mt-1 text-xs text-zinc-400">{hint}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-lime-200 bg-lime-50">
-          <Icon className="h-5 w-5 text-lime-600" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50">
+          <Icon className="h-5 w-5 text-zinc-500" />
         </div>
       </div>
     </article>
@@ -811,9 +811,9 @@ function GuidePanel({ phase }) {
   const guides = phase === "phase1" ? phase1Guides : phase2Guides;
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-zinc-100 bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Bell className="h-5 w-5 text-lime-600" />
+        <Bell className="h-5 w-5 text-zinc-500" />
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
             {phase === "phase1" ? "대량 증식 입력 원칙" : "본실험 세팅 가이드"}
@@ -823,7 +823,7 @@ function GuidePanel({ phase }) {
       </div>
       <div className="grid gap-3 lg:grid-cols-4">
         {guides.map(([title, body]) => (
-          <article className="rounded-lg border border-zinc-200 bg-zinc-50 p-3" key={title}>
+          <article className="rounded-lg border border-zinc-100 bg-zinc-50 p-3" key={title}>
             <h3 className="text-sm font-semibold text-zinc-950">{title}</h3>
             <p className="mt-2 text-xs leading-relaxed text-zinc-600">{body}</p>
           </article>
@@ -849,7 +849,7 @@ function NumericInput({ value, disabled, label, onChange }) {
   return (
     <div className="min-w-28">
       <input
-        className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+        className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
         disabled={disabled}
         inputMode="decimal"
         onChange={handleChange}
@@ -865,7 +865,7 @@ function NumericInput({ value, disabled, label, onChange }) {
 function TextInput({ value, placeholder, onChange, className = "w-44", disabled }) {
   return (
     <input
-      className={`${className} rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400`}
+      className={`${className} rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400`}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -878,7 +878,7 @@ function TextInput({ value, placeholder, onChange, className = "w-44", disabled 
 function StatusSelect({ value, options, onChange, disabled }) {
   return (
     <select
-      className="w-28 rounded-full border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 outline-none transition focus:ring-2 focus:ring-lime-200 disabled:bg-zinc-100"
+      className="w-28 rounded-full border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 outline-none transition focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100"
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -921,17 +921,17 @@ function Phase2Chart() {
 
 function ChartCard({ title, data, dataKey, xKey }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-zinc-100 bg-white p-4">
       <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-lime-600" />
+        <BarChart3 className="h-5 w-5 text-zinc-500" />
         <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
       </div>
       <div className="h-64">
         <ResponsiveContainer height="100%" width="100%">
           <BarChart data={data}>
-            <CartesianGrid stroke="rgba(161, 161, 170, 0.22)" vertical={false} />
-            <XAxis dataKey={xKey} stroke="#71717a" tick={{ fontSize: 12 }} />
-            <YAxis stroke="#71717a" tick={{ fontSize: 12 }} />
+            <CartesianGrid stroke="rgba(200, 200, 200, 0.4)" vertical={false} />
+            <XAxis dataKey={xKey} stroke="#a1a1aa" tick={{ fontSize: 12 }} />
+            <YAxis stroke="#a1a1aa" tick={{ fontSize: 12 }} />
             <Tooltip
               contentStyle={{
                 background: "#ffffff",
@@ -940,7 +940,7 @@ function ChartCard({ title, data, dataKey, xKey }) {
                 color: "#18181b",
               }}
             />
-            <Bar dataKey={dataKey} fill="#bef264" radius={[6, 6, 0, 0]} />
+            <Bar dataKey={dataKey} fill="#18181b" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -952,10 +952,10 @@ function Phase1Table() {
   const { phase1, updatePhase1, isAuthenticated } = useDashboard();
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-zinc-100 bg-white">
+      <div className="flex flex-col gap-3 border-b border-zinc-100 p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-lime-600" />
+          <ClipboardList className="h-5 w-5 text-zinc-500" />
           <div>
             <h2 className="text-base font-semibold text-zinc-950">Phase 1 대량 증식 기록 테이블</h2>
             <p className="text-xs text-zinc-500">6~7월 출발 모재 확보를 위한 계대 배치별 증식률과 오염률을 기록합니다.</p>
@@ -964,7 +964,7 @@ function Phase1Table() {
       </div>
       <div className="max-h-[620px] overflow-auto">
         <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-zinc-50 text-xs text-zinc-500">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-zinc-500">
             <tr>
               {[
                 "회차 ID",
@@ -974,7 +974,7 @@ function Phase1Table() {
                 "오염 용기 수",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-zinc-200 px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-zinc-100 px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -982,7 +982,7 @@ function Phase1Table() {
           </thead>
           <tbody>
             {phase1.map((record) => (
-              <tr className="border-b border-zinc-100 hover:bg-lime-50/50" key={record.id}>
+              <tr className="border-b border-zinc-100 hover:bg-zinc-50" key={record.id}>
                 <td className="px-3 py-2 font-semibold text-zinc-950">{record.id}</td>
                 <td className="px-3 py-2">
                   <NumericInput disabled={!isAuthenticated} value={record.initialWeight} label={numericLabels.initialWeight} onChange={(initialWeight) => updatePhase1(record.id, { initialWeight })} />
@@ -1010,12 +1010,12 @@ function Phase1Table() {
 
 function getPpfdClass(ppfd, contaminated, selected) {
   if (contaminated) return "border-rose-200 bg-rose-50 text-rose-700";
-  if (selected) return "border-lime-400 bg-lime-200 text-zinc-950";
+  if (selected) return "border-zinc-800 bg-zinc-900 text-white";
   const scale = {
-    30: "border-zinc-200 bg-white text-zinc-600",
-    50: "border-lime-100 bg-lime-50 text-zinc-700",
-    80: "border-lime-200 bg-lime-100 text-zinc-800",
-    120: "border-lime-300 bg-lime-200 text-zinc-950",
+    30: "border-zinc-100 bg-zinc-50 text-zinc-400",
+    50: "border-zinc-200 bg-zinc-100 text-zinc-500",
+    80: "border-zinc-300 bg-zinc-200 text-zinc-700",
+    120: "border-zinc-400 bg-zinc-300 text-zinc-900",
   };
   return scale[ppfd];
 }
@@ -1024,17 +1024,17 @@ function ChamberGrid() {
   const { layout, phase2Map, selectedId, flashId, selectSample, rebuildLayout, isAuthenticated } = useDashboard();
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-zinc-100 bg-white p-4">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Grid3X3 className="h-5 w-5 text-lime-600" />
+          <Grid3X3 className="h-5 w-5 text-zinc-500" />
           <div>
             <h2 className="text-base font-semibold text-zinc-950">챔버 균형 배치도</h2>
             <p className="text-xs text-zinc-500">12 × 12 선반, 인접 PPFD 중복 없이 교대 배치</p>
           </div>
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-lime-300 bg-lime-50 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-lime-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100 disabled:text-zinc-400"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100 disabled:text-zinc-400"
           disabled={!isAuthenticated}
           onClick={rebuildLayout}
           type="button"
@@ -1051,7 +1051,7 @@ function ChamberGrid() {
           return (
             <button
               className={[
-                "relative aspect-square min-h-0 rounded-md border p-1 text-[10px] font-semibold leading-tight transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-lime-300",
+                "relative aspect-square min-h-0 rounded-md border p-1 text-[10px] font-semibold leading-tight transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-zinc-400",
                 getPpfdClass(sample?.ppfd, contaminated, selected),
                 flashId === id ? "cell-flash" : "",
               ].join(" ")}
@@ -1095,10 +1095,10 @@ function Phase2Table() {
   }, [phase2, query]);
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-zinc-100 bg-white">
+      <div className="flex flex-col gap-3 border-b border-zinc-100 p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-lime-600" />
+          <ClipboardList className="h-5 w-5 text-zinc-500" />
           <div>
             <h2 className="text-base font-semibold text-zinc-950">Phase 2 광질·광량 본실험 마스터 테이블</h2>
             <p className="text-xs text-zinc-500">24개 광조건 × 반복 6개, 오염 샘플은 수치 입력이 잠깁니다.</p>
@@ -1107,7 +1107,7 @@ function Phase2Table() {
         <label className="relative w-full lg:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <input
-            className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400"
+            className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="EXP_05_3 검색"
             value={query}
@@ -1116,7 +1116,7 @@ function Phase2Table() {
       </div>
       <div className="max-h-[680px] overflow-auto">
         <table className="w-full min-w-[1460px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-zinc-50 text-xs text-zinc-500">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-zinc-500">
             <tr>
               {[
                 "ID",
@@ -1139,7 +1139,7 @@ function Phase2Table() {
                 "생체중_FW (g)",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-zinc-200 px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-zinc-100 px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -1151,9 +1151,9 @@ function Phase2Table() {
               return (
                 <tr
                   className={[
-                    "cursor-pointer border-b border-zinc-100 transition hover:bg-lime-50/60",
-                    contaminated ? "bg-rose-50" : "bg-white",
-                    selectedId === sample.id ? "outline outline-1 outline-lime-400" : "",
+                    "cursor-pointer border-b border-zinc-100 transition hover:bg-zinc-50",
+                    contaminated ? "bg-red-50/60" : "bg-white",
+                    selectedId === sample.id ? "outline outline-1 outline-zinc-300" : "",
                     flashId === sample.id ? "row-flash" : "",
                   ].join(" ")}
                   key={sample.id}
@@ -1232,10 +1232,10 @@ function Phase2MonitoringTable() {
   }, [monitoring, week, query]);
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="rounded-xl border border-zinc-100 bg-white">
+      <div className="flex flex-col gap-3 border-b border-zinc-100 p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-lime-600" />
+          <ClipboardList className="h-5 w-5 text-zinc-500" />
           <div>
             <h2 className="text-base font-semibold text-zinc-950">2주 간격 생장 모니터링</h2>
             <p className="text-xs text-zinc-500">0/2/4/6/8주차 회차별 FW, 오염 여부, 특이사항을 long-format CSV로 저장합니다.</p>
@@ -1243,7 +1243,7 @@ function Phase2MonitoringTable() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <select
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-lime-400"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200"
             onChange={(event) => setWeek(Number(event.target.value))}
             value={week}
           >
@@ -1256,7 +1256,7 @@ function Phase2MonitoringTable() {
           <label className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
             <input
-              className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400"
+              className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="EXP_05_3 검색"
               value={query}
@@ -1266,7 +1266,7 @@ function Phase2MonitoringTable() {
       </div>
       <div className="max-h-[520px] overflow-auto">
         <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-zinc-50 text-xs text-zinc-500">
+          <thead className="sticky top-0 z-10 bg-white text-xs text-zinc-500">
             <tr>
               {[
                 "회차",
@@ -1281,7 +1281,7 @@ function Phase2MonitoringTable() {
                 "오염 여부",
                 "비고",
               ].map((header) => (
-                <th className="border-b border-zinc-200 px-3 py-3 font-semibold" key={header}>
+                <th className="border-b border-zinc-100 px-3 py-3 font-semibold" key={header}>
                   {header}
                 </th>
               ))}
@@ -1292,7 +1292,7 @@ function Phase2MonitoringTable() {
               const sample = phase2Map.get(record.sampleId);
               return (
                 <tr
-                  className="cursor-pointer border-b border-zinc-100 bg-white transition hover:bg-lime-50/60"
+                  className="cursor-pointer border-b border-zinc-100 bg-white transition hover:bg-zinc-50"
                   key={record.id}
                   onClick={() => selectSample(record.sampleId)}
                 >
@@ -1364,15 +1364,15 @@ function LogBoard() {
   }
 
   return (
-    <aside className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)]">
+    <aside className="rounded-xl border border-zinc-100 bg-white p-4 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)]">
       <div className="mb-4 flex items-center gap-2">
-        <MessageSquareText className="h-5 w-5 text-lime-600" />
+        <MessageSquareText className="h-5 w-5 text-zinc-500" />
         <h2 className="text-base font-semibold text-zinc-950">연구실 로그보드</h2>
       </div>
       <div className="mb-3 grid grid-cols-1 gap-2">
         {PRESET_MESSAGES.map((preset) => (
           <button
-            className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-xs text-zinc-700 transition hover:border-lime-300 hover:bg-lime-50 disabled:cursor-not-allowed disabled:text-zinc-400"
+            className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-xs text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-400"
             disabled={!isAuthenticated}
             key={preset}
             onClick={() => setMessage((current) => (current ? `${current} ${preset}` : preset))}
@@ -1383,18 +1383,18 @@ function LogBoard() {
         ))}
       </div>
       <div className="grid gap-2">
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-950">
+        <div className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-950">
           작성자: {currentUser ?? "읽기 전용"}
         </div>
         <textarea
-          className="min-h-24 resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-lime-400 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+          className="min-h-24 resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
           disabled={!isAuthenticated}
           onChange={(event) => setMessage(event.target.value)}
           placeholder="인수인계 내용을 입력"
           value={message}
         />
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lime-200 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
           disabled={!isAuthenticated || !message.trim()}
           onClick={send}
           type="button"
@@ -1405,7 +1405,7 @@ function LogBoard() {
       </div>
       <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
         {logs.map((log) => (
-          <article className="rounded-lg border border-zinc-200 bg-zinc-50 p-3" key={log.id}>
+          <article className="rounded-lg border border-zinc-100 bg-zinc-50 p-3" key={log.id}>
             <div className="mb-1 flex items-center justify-between gap-3 text-xs">
               <span className="font-semibold text-zinc-950">{log.author}</span>
               <time className="text-zinc-400">{formatDateTime(log.createdAt)}</time>
@@ -1621,13 +1621,13 @@ function AuthModal() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/25 px-4 backdrop-blur-sm">
       <form
-        className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-5 shadow-xl"
+        className="w-full max-w-sm rounded-xl border border-zinc-100 bg-white p-5 shadow-xl"
         onSubmit={submit}
       >
         <div className="mb-4 flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-lime-600" />
+          <CheckCircle2 className="h-5 w-5 text-zinc-500" />
           <div>
             <h2 className="text-base font-semibold text-zinc-950">연구원 접속 확인</h2>
             <p className="text-xs text-zinc-500">
@@ -1639,7 +1639,7 @@ function AuthModal() {
           <label className="grid gap-1 text-xs font-semibold text-zinc-600">
             연구원
             <select
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-lime-400"
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200"
               onChange={(event) => setSelectedUser(event.target.value)}
               value={selectedUser}
             >
@@ -1653,7 +1653,7 @@ function AuthModal() {
           <label className="grid gap-1 text-xs font-semibold text-zinc-600">
             접속 비밀번호
             <input
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-lime-400"
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200"
               onChange={(event) => setPassword(event.target.value)}
               placeholder="비밀번호"
               type="password"
@@ -1662,7 +1662,7 @@ function AuthModal() {
           </label>
           {error ? <p className="text-xs font-semibold text-rose-600">{error}</p> : null}
           <button
-            className="rounded-lg bg-lime-200 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300"
+            className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
             type="submit"
           >
             접속
@@ -1688,7 +1688,7 @@ function DashboardShell() {
       <Header />
       <main className="mx-auto grid max-w-[1760px] gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
-          <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+          <div className="rounded-xl border border-zinc-100 bg-white px-4 py-3 text-sm text-zinc-600">
             접속 상태:{" "}
             <span className="font-semibold text-zinc-950">
               {isAuthenticated ? `${currentUser} 연구원` : "읽기 전용"}
