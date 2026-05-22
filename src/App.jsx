@@ -54,6 +54,7 @@ const PRESET_MESSAGES = [
   "[생체중 측정 완료]",
   "[결측치 발생, 확인 필요]",
 ];
+const LOG_AUTHORS = ["상훈", "명호", "준형", "김교수님"];
 
 const numericLabels = {
   initialWeight: "초기무게",
@@ -261,6 +262,25 @@ function layoutFromSamples(samples) {
   return buildBalancedLayout(samples);
 }
 
+function applyPendingRecords(records, pendingRef) {
+  return records.map((record) => pendingRef.current.get(record.id) ?? record);
+}
+
+function scheduleSave(timerRef, id, callback) {
+  const existingTimer = timerRef.current.get(id);
+  if (existingTimer) window.clearTimeout(existingTimer);
+  const nextTimer = window.setTimeout(() => {
+    timerRef.current.delete(id);
+    callback();
+  }, 450);
+  timerRef.current.set(id, nextTimer);
+}
+
+function clearSaveTimers(timerRef) {
+  timerRef.current.forEach((timer) => window.clearTimeout(timer));
+  timerRef.current.clear();
+}
+
 function DashboardProvider({ children }) {
   const initialPhase2 = useMemo(buildPhase2Samples, []);
   const [activePhase, setActivePhase] = useState("phase1");
@@ -279,17 +299,26 @@ function DashboardProvider({ children }) {
   const [syncError, setSyncError] = useState("");
   const [selectedId, setSelectedId] = useState("EXP_01_1");
   const [flashId, setFlashId] = useState("");
+  const phase1PendingRef = useRef(new Map());
+  const phase2PendingRef = useRef(new Map());
+  const monitoringPendingRef = useRef(new Map());
+  const phase1SaveTimersRef = useRef(new Map());
+  const phase2SaveTimersRef = useRef(new Map());
+  const monitoringSaveTimersRef = useRef(new Map());
 
   const refreshPhase1 = useCallback(async () => {
     const data = await fetchJson("/api/phase1", { cache: "no-store" });
-    setPhase1(normalizePhase1(data.records));
+    setPhase1(applyPendingRecords(normalizePhase1(data.records), phase1PendingRef));
   }, []);
 
   const refreshSamples = useCallback(async () => {
     const data = await fetchJson("/api/samples", { cache: "no-store" });
-    const samples = normalizePhase2(data.samples, null, initialPhase2);
+    const samples = applyPendingRecords(
+      normalizePhase2(data.samples, null, initialPhase2),
+      phase2PendingRef,
+    );
     setPhase2(samples);
-    setMonitoring(normalizeMonitoring(data.monitoring, samples));
+    setMonitoring(applyPendingRecords(normalizeMonitoring(data.monitoring, samples), monitoringPendingRef));
     setLayout(layoutFromSamples(samples));
   }, [initialPhase2]);
 
@@ -313,22 +342,40 @@ function DashboardProvider({ children }) {
     return () => window.clearInterval(timer);
   }, [refreshAll]);
 
+  useEffect(() => {
+    return () => {
+      clearSaveTimers(phase1SaveTimersRef);
+      clearSaveTimers(phase2SaveTimersRef);
+      clearSaveTimers(monitoringSaveTimersRef);
+    };
+  }, []);
+
   const phase2Map = useMemo(() => new Map(phase2.map((sample) => [sample.id, sample])), [phase2]);
 
   const savePhase1 = useCallback(
     async (record) => {
       try {
-        await fetchJson("/api/phase1", {
+        const data = await fetchJson("/api/phase1", {
           method: "PUT",
           body: JSON.stringify(record),
         });
-        await refreshPhase1();
+        if (data.persisted === false) {
+          throw new Error(data.error || "Phase 1 data was not persisted");
+        }
+        const latestPending = phase1PendingRef.current.get(record.id);
+        if (latestPending?.updatedAt === record.updatedAt) {
+          phase1PendingRef.current.delete(record.id);
+          if (data.record) {
+            setPhase1((current) =>
+              current.map((item) => (item.id === record.id ? data.record : item)),
+            );
+          }
+        }
       } catch (error) {
         setSyncError(error.message);
-        await refreshPhase1();
       }
     },
-    [refreshPhase1],
+    [],
   );
 
   const updatePhase1 = useCallback((id, patch) => {
@@ -344,23 +391,36 @@ function DashboardProvider({ children }) {
         record.id === id ? nextRecord : record,
       ),
     );
-    void savePhase1(nextRecord);
+    phase1PendingRef.current.set(id, nextRecord);
+    scheduleSave(phase1SaveTimersRef, id, () => {
+      void savePhase1(nextRecord);
+    });
   }, [phase1, savePhase1]);
 
   const saveSample = useCallback(
     async (sample) => {
       try {
-        await fetchJson("/api/samples", {
+        const data = await fetchJson("/api/samples", {
           method: "PUT",
           body: JSON.stringify({ sample }),
         });
-        await refreshSamples();
+        if (data.persisted === false) {
+          throw new Error(data.error || "Phase 2 sample data was not persisted");
+        }
+        const latestPending = phase2PendingRef.current.get(sample.id);
+        if (latestPending?.updatedAt === sample.updatedAt) {
+          phase2PendingRef.current.delete(sample.id);
+          if (data.sample) {
+            setPhase2((current) =>
+              current.map((item) => (item.id === sample.id ? data.sample : item)),
+            );
+          }
+        }
       } catch (error) {
         setSyncError(error.message);
-        await refreshSamples();
       }
     },
-    [refreshSamples],
+    [],
   );
 
   const updatePhase2 = useCallback((id, patch) => {
@@ -376,23 +436,34 @@ function DashboardProvider({ children }) {
         sample.id === id ? nextSample : sample,
       ),
     );
-    void saveSample(nextSample);
+    phase2PendingRef.current.set(id, nextSample);
+    scheduleSave(phase2SaveTimersRef, id, () => {
+      void saveSample(nextSample);
+    });
   }, [phase2, saveSample]);
 
   const saveMonitoring = useCallback(
     async (record) => {
       try {
-        await fetchJson("/api/samples", {
+        const data = await fetchJson("/api/samples", {
           method: "PUT",
           body: JSON.stringify({ kind: "monitoring", record }),
         });
-        await refreshSamples();
+        if (data.persisted === false) {
+          throw new Error(data.error || "Monitoring data was not persisted");
+        }
+        const latestPending = monitoringPendingRef.current.get(record.id);
+        if (latestPending?.updatedAt === record.updatedAt) {
+          monitoringPendingRef.current.delete(record.id);
+          if (data.monitoring) {
+            setMonitoring(applyPendingRecords(normalizeMonitoring(data.monitoring, phase2), monitoringPendingRef));
+          }
+        }
       } catch (error) {
         setSyncError(error.message);
-        await refreshSamples();
       }
     },
-    [refreshSamples],
+    [phase2],
   );
 
   const updateMonitoring = useCallback((id, patch) => {
@@ -408,7 +479,10 @@ function DashboardProvider({ children }) {
         record.id === id ? nextRecord : record,
       ),
     );
-    void saveMonitoring(nextRecord);
+    monitoringPendingRef.current.set(id, nextRecord);
+    scheduleSave(monitoringSaveTimersRef, id, () => {
+      void saveMonitoring(nextRecord);
+    });
   }, [monitoring, saveMonitoring]);
 
   const selectSample = useCallback((id) => {
@@ -1211,12 +1285,17 @@ function LogBoard() {
         ))}
       </div>
       <div className="grid gap-2">
-        <input
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-lime-400"
+        <select
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 outline-none transition focus:border-lime-400"
           onChange={(event) => setAuthor(event.target.value)}
-          placeholder="작성자"
           value={author}
-        />
+        >
+          {LOG_AUTHORS.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
         <textarea
           className="min-h-24 resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-lime-400"
           onChange={(event) => setMessage(event.target.value)}
