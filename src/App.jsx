@@ -1173,9 +1173,14 @@ function ChamberGrid() {
 function Phase2Table() {
   const { phase2, selectedId, flashId, updatePhase2, selectSample, isAuthenticated } = useDashboard();
   const rowRefs = useRef({});
+  const didMountRef = useRef(false);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     rowRefs.current[selectedId]?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [selectedId]);
 
