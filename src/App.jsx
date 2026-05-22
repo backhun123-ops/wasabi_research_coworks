@@ -55,6 +55,7 @@ const PRESET_MESSAGES = [
   "[결측치 발생, 확인 필요]",
 ];
 const LOG_AUTHORS = ["상훈", "명호", "준형", "김교수님"];
+const DASHBOARD_PASSWORD = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "wasabi2026";
 
 const numericLabels = {
   initialWeight: "초기무게",
@@ -299,6 +300,8 @@ function DashboardProvider({ children }) {
   const [syncError, setSyncError] = useState("");
   const [selectedId, setSelectedId] = useState("EXP_01_1");
   const [flashId, setFlashId] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [readOnlyMode, setReadOnlyMode] = useState(false);
   const phase1PendingRef = useRef(new Map());
   const phase2PendingRef = useRef(new Map());
   const monitoringPendingRef = useRef(new Map());
@@ -350,6 +353,37 @@ function DashboardProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    const savedUser = window.sessionStorage.getItem("wasabi_current_user");
+    if (savedUser && LOG_AUTHORS.includes(savedUser)) {
+      setCurrentUser(savedUser);
+    }
+  }, []);
+
+  const isAuthenticated = Boolean(currentUser);
+
+  const authenticate = useCallback((user, password) => {
+    if (!LOG_AUTHORS.includes(user) || password !== DASHBOARD_PASSWORD) {
+      return false;
+    }
+    setCurrentUser(user);
+    setReadOnlyMode(false);
+    window.sessionStorage.setItem("wasabi_current_user", user);
+    setSyncError("");
+    return true;
+  }, []);
+
+  const enterReadOnlyMode = useCallback(() => {
+    setReadOnlyMode(true);
+    setSyncError("");
+  }, []);
+
+  const blockUnauthenticatedWrite = useCallback(() => {
+    if (currentUser) return false;
+    setSyncError("인증되지 않은 사용자는 읽기 전용으로만 볼 수 있습니다.");
+    return true;
+  }, [currentUser]);
+
   const phase2Map = useMemo(() => new Map(phase2.map((sample) => [sample.id, sample])), [phase2]);
 
   const savePhase1 = useCallback(
@@ -379,6 +413,7 @@ function DashboardProvider({ children }) {
   );
 
   const updatePhase1 = useCallback((id, patch) => {
+    if (blockUnauthenticatedWrite()) return;
     const currentRecord = phase1.find((record) => record.id === id);
     if (!currentRecord) return;
     const nextRecord = {
@@ -395,7 +430,7 @@ function DashboardProvider({ children }) {
     scheduleSave(phase1SaveTimersRef, id, () => {
       void savePhase1(nextRecord);
     });
-  }, [phase1, savePhase1]);
+  }, [blockUnauthenticatedWrite, phase1, savePhase1]);
 
   const saveSample = useCallback(
     async (sample) => {
@@ -424,6 +459,7 @@ function DashboardProvider({ children }) {
   );
 
   const updatePhase2 = useCallback((id, patch) => {
+    if (blockUnauthenticatedWrite()) return;
     const currentSample = phase2.find((sample) => sample.id === id);
     if (!currentSample) return;
     const nextSample = {
@@ -440,7 +476,7 @@ function DashboardProvider({ children }) {
     scheduleSave(phase2SaveTimersRef, id, () => {
       void saveSample(nextSample);
     });
-  }, [phase2, saveSample]);
+  }, [blockUnauthenticatedWrite, phase2, saveSample]);
 
   const saveMonitoring = useCallback(
     async (record) => {
@@ -467,6 +503,7 @@ function DashboardProvider({ children }) {
   );
 
   const updateMonitoring = useCallback((id, patch) => {
+    if (blockUnauthenticatedWrite()) return;
     const currentRecord = monitoring.find((record) => record.id === id);
     if (!currentRecord) return;
     const nextRecord = {
@@ -483,7 +520,7 @@ function DashboardProvider({ children }) {
     scheduleSave(monitoringSaveTimersRef, id, () => {
       void saveMonitoring(nextRecord);
     });
-  }, [monitoring, saveMonitoring]);
+  }, [blockUnauthenticatedWrite, monitoring, saveMonitoring]);
 
   const selectSample = useCallback((id) => {
     setActivePhase("phase2");
@@ -493,6 +530,7 @@ function DashboardProvider({ children }) {
   }, []);
 
   const rebuildLayout = useCallback(() => {
+    if (blockUnauthenticatedWrite()) return;
     const nextLayout = buildBalancedLayout(phase2);
     const positionById = new Map(nextLayout.map((id, index) => [id, index]));
     const nextSamples = phase2.map((sample) => {
@@ -518,14 +556,15 @@ function DashboardProvider({ children }) {
         setSyncError(error.message);
         void refreshSamples();
       });
-  }, [phase2, refreshSamples]);
+  }, [blockUnauthenticatedWrite, phase2, refreshSamples]);
 
-  const addLog = useCallback((author, message) => {
+  const addLog = useCallback((message) => {
+    if (blockUnauthenticatedWrite()) return;
     const trimmed = message.trim();
     if (!trimmed) return;
     const optimisticMessage = {
       id: createId(),
-      author: author.trim() || "팀원",
+      author: currentUser,
       message: trimmed,
       createdAt: new Date().toISOString(),
     };
@@ -539,7 +578,7 @@ function DashboardProvider({ children }) {
         setSyncError(error.message);
         void refreshChat();
       });
-  }, [refreshChat]);
+  }, [blockUnauthenticatedWrite, currentUser, refreshChat]);
 
   const value = useMemo(
     () => ({
@@ -554,6 +593,11 @@ function DashboardProvider({ children }) {
       selectedId,
       flashId,
       syncError,
+      currentUser,
+      isAuthenticated,
+      showAuthModal: !currentUser && !readOnlyMode,
+      authenticate,
+      enterReadOnlyMode,
       updatePhase1,
       updatePhase2,
       updateMonitoring,
@@ -572,6 +616,11 @@ function DashboardProvider({ children }) {
       selectedId,
       flashId,
       syncError,
+      currentUser,
+      isAuthenticated,
+      readOnlyMode,
+      authenticate,
+      enterReadOnlyMode,
       updatePhase1,
       updatePhase2,
       updateMonitoring,
@@ -792,10 +841,11 @@ function NumericInput({ value, disabled, label, onChange }) {
   );
 }
 
-function TextInput({ value, placeholder, onChange, className = "w-44" }) {
+function TextInput({ value, placeholder, onChange, className = "w-44", disabled }) {
   return (
     <input
-      className={`${className} rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400`}
+      className={`${className} rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-300 focus:border-lime-400 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400`}
+      disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
       placeholder={placeholder}
@@ -878,7 +928,7 @@ function ChartCard({ title, data, dataKey, xKey }) {
 }
 
 function Phase1Table() {
-  const { phase1, updatePhase1 } = useDashboard();
+  const { phase1, updatePhase1, isAuthenticated } = useDashboard();
 
   return (
     <section className="rounded-lg border border-zinc-200 bg-white shadow-sm">
@@ -914,19 +964,19 @@ function Phase1Table() {
               <tr className="border-b border-zinc-100 hover:bg-lime-50/50" key={record.id}>
                 <td className="px-3 py-2 font-semibold text-zinc-950">{record.id}</td>
                 <td className="px-3 py-2">
-                  <NumericInput value={record.initialWeight} label={numericLabels.initialWeight} onChange={(initialWeight) => updatePhase1(record.id, { initialWeight })} />
+                  <NumericInput disabled={!isAuthenticated} value={record.initialWeight} label={numericLabels.initialWeight} onChange={(initialWeight) => updatePhase1(record.id, { initialWeight })} />
                 </td>
                 <td className="px-3 py-2">
-                  <NumericInput value={record.finalWeight} label={numericLabels.finalWeight} onChange={(finalWeight) => updatePhase1(record.id, { finalWeight })} />
+                  <NumericInput disabled={!isAuthenticated} value={record.finalWeight} label={numericLabels.finalWeight} onChange={(finalWeight) => updatePhase1(record.id, { finalWeight })} />
                 </td>
                 <td className="px-3 py-2 font-semibold text-zinc-950">
                   {getRate(record.initialWeight, record.finalWeight)?.toFixed(2) ?? "-"}
                 </td>
                 <td className="px-3 py-2">
-                  <NumericInput value={record.contaminatedCount} label={numericLabels.contaminatedCount} onChange={(contaminatedCount) => updatePhase1(record.id, { contaminatedCount })} />
+                  <NumericInput disabled={!isAuthenticated} value={record.contaminatedCount} label={numericLabels.contaminatedCount} onChange={(contaminatedCount) => updatePhase1(record.id, { contaminatedCount })} />
                 </td>
                 <td className="px-3 py-2">
-                  <TextInput className="w-64" value={record.notes} placeholder="특이사항" onChange={(notes) => updatePhase1(record.id, { notes })} />
+                  <TextInput disabled={!isAuthenticated} className="w-64" value={record.notes} placeholder="특이사항" onChange={(notes) => updatePhase1(record.id, { notes })} />
                 </td>
               </tr>
             ))}
@@ -950,7 +1000,7 @@ function getPpfdClass(ppfd, contaminated, selected) {
 }
 
 function ChamberGrid() {
-  const { layout, phase2Map, selectedId, flashId, selectSample, rebuildLayout } = useDashboard();
+  const { layout, phase2Map, selectedId, flashId, selectSample, rebuildLayout, isAuthenticated } = useDashboard();
 
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
@@ -963,7 +1013,8 @@ function ChamberGrid() {
           </div>
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-lime-300 bg-lime-50 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-lime-100"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-lime-300 bg-lime-50 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-lime-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100 disabled:text-zinc-400"
+          disabled={!isAuthenticated}
           onClick={rebuildLayout}
           type="button"
         >
@@ -1008,7 +1059,7 @@ function ChamberGrid() {
 }
 
 function Phase2Table() {
-  const { phase2, selectedId, flashId, updatePhase2, selectSample } = useDashboard();
+  const { phase2, selectedId, flashId, updatePhase2, selectSample, isAuthenticated } = useDashboard();
   const rowRefs = useRef({});
   const [query, setQuery] = useState("");
 
@@ -1086,6 +1137,7 @@ function Phase2Table() {
                   <td className="px-3 py-2 font-semibold text-zinc-950">{sample.id}</td>
                   <td className="px-3 py-2">
                     <StatusSelect
+                      disabled={!isAuthenticated}
                       value={sample.status}
                       options={PHASE2_STATUSES}
                       onChange={(status) => updatePhase2(sample.id, { status })}
@@ -1099,7 +1151,7 @@ function Phase2Table() {
                   {["gluco", "sinigrin", "dw", "fw"].map((field) => (
                     <td className="px-3 py-2" key={field}>
                       <NumericInput
-                        disabled={contaminated}
+                        disabled={contaminated || !isAuthenticated}
                         label={numericLabels[field]}
                         value={sample[field]}
                         onChange={(value) => updatePhase2(sample.id, { [field]: value })}
@@ -1108,6 +1160,7 @@ function Phase2Table() {
                   ))}
                   <td className="px-3 py-2">
                     <TextInput
+                      disabled={!isAuthenticated}
                       className="w-56"
                       value={sample.notes}
                       placeholder="특이사항"
@@ -1125,7 +1178,7 @@ function Phase2Table() {
 }
 
 function Phase2MonitoringTable() {
-  const { monitoring, phase2Map, updateMonitoring, selectSample } = useDashboard();
+  const { monitoring, phase2Map, updateMonitoring, selectSample, isAuthenticated } = useDashboard();
   const [week, setWeek] = useState(2);
   const [query, setQuery] = useState("");
 
@@ -1211,6 +1264,7 @@ function Phase2MonitoringTable() {
                   <td className="px-3 py-2 text-zinc-600">{sample?.photoperiod ?? PHOTOPERIOD}</td>
                   <td className="px-3 py-2">
                     <TextInput
+                      disabled={!isAuthenticated}
                       className="w-32"
                       value={record.checkedAt}
                       placeholder="2026-08-14"
@@ -1219,6 +1273,7 @@ function Phase2MonitoringTable() {
                   </td>
                   <td className="px-3 py-2">
                     <StatusSelect
+                      disabled={!isAuthenticated}
                       value={record.status}
                       options={["정상", "성장저하", "오염의심", "오염확정", "수확"]}
                       onChange={(status) => updateMonitoring(record.id, { status })}
@@ -1226,6 +1281,7 @@ function Phase2MonitoringTable() {
                   </td>
                   <td className="px-3 py-2">
                     <NumericInput
+                      disabled={!isAuthenticated}
                       label={numericLabels.monitorFw}
                       value={record.monitorFw}
                       onChange={(monitorFw) => updateMonitoring(record.id, { monitorFw })}
@@ -1233,6 +1289,7 @@ function Phase2MonitoringTable() {
                   </td>
                   <td className="px-3 py-2">
                     <StatusSelect
+                      disabled={!isAuthenticated}
                       value={record.contamination}
                       options={["없음", "곰팡이", "박테리아", "폐기"]}
                       onChange={(contamination) => updateMonitoring(record.id, { contamination })}
@@ -1240,6 +1297,7 @@ function Phase2MonitoringTable() {
                   </td>
                   <td className="px-3 py-2">
                     <TextInput
+                      disabled={!isAuthenticated}
                       className="w-64"
                       value={record.notes}
                       placeholder="색 변화, 생장저하, 위치 이상"
@@ -1257,12 +1315,11 @@ function Phase2MonitoringTable() {
 }
 
 function LogBoard() {
-  const { logs, addLog } = useDashboard();
-  const [author, setAuthor] = useState("상훈");
+  const { logs, addLog, currentUser, isAuthenticated } = useDashboard();
   const [message, setMessage] = useState("");
 
   function send() {
-    addLog(author, message);
+    addLog(message);
     setMessage("");
   }
 
@@ -1275,7 +1332,8 @@ function LogBoard() {
       <div className="mb-3 grid grid-cols-1 gap-2">
         {PRESET_MESSAGES.map((preset) => (
           <button
-            className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-xs text-zinc-700 transition hover:border-lime-300 hover:bg-lime-50"
+            className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-xs text-zinc-700 transition hover:border-lime-300 hover:bg-lime-50 disabled:cursor-not-allowed disabled:text-zinc-400"
+            disabled={!isAuthenticated}
             key={preset}
             onClick={() => setMessage((current) => (current ? `${current} ${preset}` : preset))}
             type="button"
@@ -1285,25 +1343,19 @@ function LogBoard() {
         ))}
       </div>
       <div className="grid gap-2">
-        <select
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 outline-none transition focus:border-lime-400"
-          onChange={(event) => setAuthor(event.target.value)}
-          value={author}
-        >
-          {LOG_AUTHORS.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-950">
+          작성자: {currentUser ?? "읽기 전용"}
+        </div>
         <textarea
-          className="min-h-24 resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-lime-400"
+          className="min-h-24 resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-lime-400 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+          disabled={!isAuthenticated}
           onChange={(event) => setMessage(event.target.value)}
           placeholder="인수인계 내용을 입력"
           value={message}
         />
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lime-200 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lime-200 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+          disabled={!isAuthenticated || !message.trim()}
           onClick={send}
           type="button"
         >
@@ -1495,14 +1547,99 @@ function Phase2View() {
   );
 }
 
+function AuthModal() {
+  const { showAuthModal, authenticate, enterReadOnlyMode } = useDashboard();
+  const [selectedUser, setSelectedUser] = useState(LOG_AUTHORS[0]);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  if (!showAuthModal) return null;
+
+  function submit(event) {
+    event.preventDefault();
+    const ok = authenticate(selectedUser, password);
+    if (!ok) {
+      setError("비밀번호가 맞지 않습니다.");
+      return;
+    }
+    setError("");
+    setPassword("");
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm">
+      <form
+        className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-5 shadow-xl"
+        onSubmit={submit}
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-lime-600" />
+          <div>
+            <h2 className="text-base font-semibold text-zinc-950">연구원 접속 확인</h2>
+            <p className="text-xs text-zinc-500">
+              연구원 이름을 선택하고 접속 비밀번호를 입력하세요.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3">
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            연구원
+            <select
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-lime-400"
+              onChange={(event) => setSelectedUser(event.target.value)}
+              value={selectedUser}
+            >
+              {LOG_AUTHORS.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            접속 비밀번호
+            <input
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-lime-400"
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="비밀번호"
+              type="password"
+              value={password}
+            />
+          </label>
+          {error ? <p className="text-xs font-semibold text-rose-600">{error}</p> : null}
+          <button
+            className="rounded-lg bg-lime-200 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-lime-300"
+            type="submit"
+          >
+            접속
+          </button>
+          <button
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50"
+            onClick={enterReadOnlyMode}
+            type="button"
+          >
+            읽기 전용으로 보기
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function DashboardShell() {
-  const { activePhase, syncError } = useDashboard();
+  const { activePhase, syncError, currentUser, isAuthenticated } = useDashboard();
 
   return (
     <div className="min-h-screen">
       <Header />
       <main className="mx-auto grid max-w-[1760px] gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
+          <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+            접속 상태:{" "}
+            <span className="font-semibold text-zinc-950">
+              {isAuthenticated ? `${currentUser} 연구원` : "읽기 전용"}
+            </span>
+          </div>
           {syncError ? (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               DB 동기화 오류: {syncError}
@@ -1512,6 +1649,7 @@ function DashboardShell() {
         </div>
         <LogBoard />
       </main>
+      <AuthModal />
     </div>
   );
 }
