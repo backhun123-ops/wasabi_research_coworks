@@ -56,6 +56,8 @@ const PRESET_MESSAGES = [
 ];
 const LOG_AUTHORS = ["상훈", "명호", "준형", "김교수님"];
 const DASHBOARD_PASSWORD = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "wasabi2026";
+const PROPOSAL_CATEGORIES = ["논문", "알고리즘", "실험 아이디어", "분석 노트"];
+const PROPOSAL_STATUSES = ["검토중", "실행 예정", "보류", "완료"];
 
 const numericLabels = {
   initialWeight: "초기무게",
@@ -227,6 +229,10 @@ function normalizeMonitoring(saved, samples) {
   });
 }
 
+function normalizeProposals(saved) {
+  return Array.isArray(saved) ? saved : [];
+}
+
 function conditionNumber(id) {
   return Number(/^EXP_(\d{2})_\d+$/.exec(id)?.[1] ?? 0);
 }
@@ -309,6 +315,7 @@ function DashboardProvider({ children }) {
   const [phase1, setPhase1] = useState(buildPhase1Records);
   const [phase2, setPhase2] = useState(initialPhase2);
   const [monitoring, setMonitoring] = useState(() => buildMonitoringRecords(initialPhase2));
+  const [proposals, setProposals] = useState([]);
   const [layout, setLayout] = useState(() => buildBalancedLayout(initialPhase2));
   const [logs, setLogs] = useState([
     {
@@ -326,9 +333,11 @@ function DashboardProvider({ children }) {
   const phase1PendingRef = useRef(new Map());
   const phase2PendingRef = useRef(new Map());
   const monitoringPendingRef = useRef(new Map());
+  const proposalPendingRef = useRef(new Map());
   const phase1SaveTimersRef = useRef(new Map());
   const phase2SaveTimersRef = useRef(new Map());
   const monitoringSaveTimersRef = useRef(new Map());
+  const proposalSaveTimersRef = useRef(new Map());
 
   const refreshPhase1 = useCallback(async () => {
     const data = await fetchJson("/api/phase1", { cache: "no-store" });
@@ -351,14 +360,19 @@ function DashboardProvider({ children }) {
     setLogs(data.messages ?? []);
   }, []);
 
+  const refreshProposals = useCallback(async () => {
+    const data = await fetchJson("/api/proposals", { cache: "no-store" });
+    setProposals(applyPendingRecords(normalizeProposals(data.proposals), proposalPendingRef));
+  }, []);
+
   const refreshAll = useCallback(async () => {
     try {
       setSyncError("");
-      await Promise.all([refreshPhase1(), refreshSamples(), refreshChat()]);
+      await Promise.all([refreshPhase1(), refreshSamples(), refreshChat(), refreshProposals()]);
     } catch (error) {
       setSyncError(error.message);
     }
-  }, [refreshPhase1, refreshSamples, refreshChat]);
+  }, [refreshPhase1, refreshSamples, refreshChat, refreshProposals]);
 
   useEffect(() => {
     refreshAll();
@@ -371,6 +385,7 @@ function DashboardProvider({ children }) {
       clearSaveTimers(phase1SaveTimersRef);
       clearSaveTimers(phase2SaveTimersRef);
       clearSaveTimers(monitoringSaveTimersRef);
+      clearSaveTimers(proposalSaveTimersRef);
     };
   }, []);
 
@@ -601,6 +616,71 @@ function DashboardProvider({ children }) {
       });
   }, [blockUnauthenticatedWrite, currentUser, refreshChat]);
 
+  const saveProposal = useCallback(
+    async (proposal) => {
+      try {
+        const data = await fetchJson("/api/proposals", {
+          method: "PUT",
+          body: JSON.stringify(proposal),
+        });
+        if (data.persisted === false) {
+          throw new Error(data.error || "Research proposal was not persisted");
+        }
+        const latestPending = proposalPendingRef.current.get(proposal.id);
+        if (latestPending?.updatedAt === proposal.updatedAt) {
+          proposalPendingRef.current.delete(proposal.id);
+          if (data.proposal) {
+            setProposals((current) =>
+              current.map((item) => (item.id === proposal.id ? data.proposal : item)),
+            );
+          }
+        }
+      } catch (error) {
+        setSyncError(error.message);
+      }
+    },
+    [],
+  );
+
+  const addProposal = useCallback((draft) => {
+    if (blockUnauthenticatedWrite()) return;
+    const nextProposal = {
+      id: createId(),
+      category: draft.category,
+      status: "검토중",
+      title: draft.title,
+      paperTitle: draft.paperTitle,
+      paperUrl: draft.paperUrl,
+      algorithm: draft.algorithm,
+      discussion: draft.discussion,
+      author: currentUser,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setProposals((current) => [nextProposal, ...current]);
+    proposalPendingRef.current.set(nextProposal.id, nextProposal);
+    void saveProposal(nextProposal);
+  }, [blockUnauthenticatedWrite, currentUser, saveProposal]);
+
+  const updateProposal = useCallback((id, patch) => {
+    if (blockUnauthenticatedWrite()) return;
+    const currentProposal = proposals.find((proposal) => proposal.id === id);
+    if (!currentProposal) return;
+    const nextProposal = {
+      ...currentProposal,
+      ...patch,
+      author: currentUser,
+      updatedAt: new Date().toISOString(),
+    };
+    setProposals((current) =>
+      current.map((proposal) => (proposal.id === id ? nextProposal : proposal)),
+    );
+    proposalPendingRef.current.set(id, nextProposal);
+    scheduleSave(proposalSaveTimersRef, id, () => {
+      void saveProposal(nextProposal);
+    });
+  }, [blockUnauthenticatedWrite, currentUser, proposals, saveProposal]);
+
   const value = useMemo(
     () => ({
       activePhase,
@@ -608,6 +688,7 @@ function DashboardProvider({ children }) {
       phase1,
       phase2,
       monitoring,
+      proposals,
       phase2Map,
       layout,
       logs,
@@ -625,12 +706,15 @@ function DashboardProvider({ children }) {
       selectSample,
       rebuildLayout,
       addLog,
+      addProposal,
+      updateProposal,
     }),
     [
       activePhase,
       phase1,
       phase2,
       monitoring,
+      proposals,
       phase2Map,
       layout,
       logs,
@@ -648,6 +732,8 @@ function DashboardProvider({ children }) {
       selectSample,
       rebuildLayout,
       addLog,
+      addProposal,
+      updateProposal,
     ],
   );
 
@@ -661,11 +747,13 @@ function useDashboard() {
 }
 
 function Header() {
-  const { activePhase, setActivePhase, phase1, phase2, monitoring } = useDashboard();
+  const { activePhase, setActivePhase, phase1, phase2, monitoring, proposals } = useDashboard();
   const title =
     activePhase === "phase1"
       ? "Phase 1: 대량 계대·출발 모재 확보"
-      : "Phase 2: 광질·광량 정밀제어 본실험";
+      : activePhase === "phase2"
+        ? "Phase 2: 광질·광량 정밀제어 본실험"
+        : "연구 제안: 논문·알고리즘 토론";
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/95 backdrop-blur-xl">
@@ -686,6 +774,7 @@ function Header() {
             {[
               ["phase1", "Phase 1 증식"],
               ["phase2", "Phase 2 본실험"],
+              ["proposal", "연구 제안"],
             ].map(([id, label]) => (
               <button
                 className={[
@@ -707,7 +796,9 @@ function Header() {
             onClick={() =>
               activePhase === "phase1"
                 ? downloadPhase1Csv(phase1)
-                : downloadPhase2Csv(phase2, monitoring)
+                : activePhase === "phase2"
+                  ? downloadPhase2Csv(phase2, monitoring)
+                  : downloadProposalsCsv(proposals)
             }
             type="button"
           >
@@ -1575,6 +1666,215 @@ function downloadPhase2Csv(samples, monitoring) {
   );
 }
 
+function downloadProposalsCsv(proposals) {
+  downloadCsv(
+    `wasabi_research_proposals_${new Date().toISOString().slice(0, 10)}.csv`,
+    [
+      "id",
+      "category",
+      "status",
+      "title",
+      "paper_title",
+      "paper_url",
+      "algorithm",
+      "discussion",
+      "author",
+      "created_at",
+      "updated_at",
+    ],
+    proposals.map((proposal) => [
+      proposal.id,
+      proposal.category,
+      proposal.status,
+      proposal.title,
+      proposal.paperTitle,
+      proposal.paperUrl,
+      proposal.algorithm,
+      proposal.discussion,
+      proposal.author,
+      proposal.createdAt,
+      proposal.updatedAt,
+    ]),
+  );
+}
+
+function ResearchProposalView() {
+  const { proposals, addProposal, updateProposal, isAuthenticated } = useDashboard();
+  const [draft, setDraft] = useState({
+    category: "논문",
+    title: "",
+    paperTitle: "",
+    paperUrl: "",
+    algorithm: "",
+    discussion: "",
+  });
+
+  const canSubmit = isAuthenticated && (draft.title.trim() || draft.discussion.trim());
+
+  function updateDraft(field, value) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function submitProposal(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    addProposal(draft);
+    setDraft({
+      category: "논문",
+      title: "",
+      paperTitle: "",
+      paperUrl: "",
+      algorithm: "",
+      discussion: "",
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <section className="rounded-xl border border-zinc-100 bg-white p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <ClipboardList className="h-5 w-5 text-zinc-500" />
+          <div>
+            <h2 className="text-base font-semibold text-zinc-950">연구 제안 보드</h2>
+            <p className="text-xs text-zinc-500">
+              논문 후보, RSM/머신러닝 알고리즘, 후속 실험 아이디어를 팀 공용으로 기록합니다.
+            </p>
+          </div>
+        </div>
+        <form className="grid gap-3 lg:grid-cols-2" onSubmit={submitProposal}>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            분류
+            <select
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("category", event.target.value)}
+              value={draft.category}
+            >
+              {PROPOSAL_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            제안 제목
+            <input
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("title", event.target.value)}
+              placeholder="예: RSM + Random Forest 비교 분석"
+              value={draft.title}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            논문명
+            <input
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("paperTitle", event.target.value)}
+              placeholder="참고 논문 제목"
+              value={draft.paperTitle}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600">
+            논문/자료 링크
+            <input
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("paperUrl", event.target.value)}
+              placeholder="https://..."
+              value={draft.paperUrl}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600 lg:col-span-2">
+            알고리즘 후보
+            <input
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("algorithm", event.target.value)}
+              placeholder="RSM, Random Forest, XGBoost, Gaussian Process, Bayesian Optimization 등"
+              value={draft.algorithm}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-zinc-600 lg:col-span-2">
+            토론 메모
+            <textarea
+              className="min-h-28 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+              disabled={!isAuthenticated}
+              onChange={(event) => updateDraft("discussion", event.target.value)}
+              placeholder="왜 필요한지, 어떤 데이터 컬럼을 쓸지, 검증 방법은 무엇인지 기록"
+              value={draft.discussion}
+            />
+          </label>
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 lg:col-span-2"
+            disabled={!canSubmit}
+            type="submit"
+          >
+            <Send className="h-4 w-4" />
+            제안 등록
+          </button>
+        </form>
+      </section>
+
+      <section className="rounded-xl border border-zinc-100 bg-white">
+        <div className="flex items-center justify-between border-b border-zinc-100 p-4">
+          <div>
+            <h2 className="text-base font-semibold text-zinc-950">공유 제안 목록</h2>
+            <p className="text-xs text-zinc-500">총 {proposals.length}건</p>
+          </div>
+        </div>
+        <div className="grid gap-3 p-4">
+          {proposals.length === 0 ? (
+            <div className="rounded-lg border border-zinc-100 bg-zinc-50 p-4 text-sm text-zinc-500">
+              아직 등록된 연구 제안이 없습니다.
+            </div>
+          ) : null}
+          {proposals.map((proposal) => (
+            <article className="rounded-lg border border-zinc-100 bg-zinc-50 p-4" key={proposal.id}>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700">
+                      {proposal.category}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      {proposal.author} · {formatDateTime(proposal.updatedAt)}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-zinc-950">{proposal.title || "제목 없음"}</h3>
+                  {proposal.paperTitle ? (
+                    <p className="text-sm text-zinc-600">논문: {proposal.paperTitle}</p>
+                  ) : null}
+                  {proposal.algorithm ? (
+                    <p className="text-sm text-zinc-600">알고리즘: {proposal.algorithm}</p>
+                  ) : null}
+                  {proposal.paperUrl ? (
+                    <p className="break-all text-xs text-zinc-500">{proposal.paperUrl}</p>
+                  ) : null}
+                </div>
+                <StatusSelect
+                  disabled={!isAuthenticated}
+                  onChange={(status) => updateProposal(proposal.id, { status })}
+                  options={PROPOSAL_STATUSES}
+                  value={proposal.status}
+                />
+              </div>
+              <textarea
+                className="mt-3 min-h-24 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+                disabled={!isAuthenticated}
+                onChange={(event) => updateProposal(proposal.id, { discussion: event.target.value })}
+                value={proposal.discussion}
+              />
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function Phase1View() {
   return (
     <div className="space-y-4">
@@ -1699,7 +1999,13 @@ function DashboardShell() {
               DB 동기화 오류: {syncError}
             </div>
           ) : null}
-          {activePhase === "phase1" ? <Phase1View /> : <Phase2View />}
+          {activePhase === "phase1" ? (
+            <Phase1View />
+          ) : activePhase === "phase2" ? (
+            <Phase2View />
+          ) : (
+            <ResearchProposalView />
+          )}
         </div>
         <LogBoard />
       </main>

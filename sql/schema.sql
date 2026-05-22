@@ -74,3 +74,20 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE INDEX IF NOT EXISTS messages_created_at_idx ON messages (created_at DESC);
+
+CREATE TABLE IF NOT EXISTS research_proposals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  category TEXT NOT NULL DEFAULT '논문',
+  status TEXT NOT NULL DEFAULT '검토중',
+  title TEXT NOT NULL DEFAULT '',
+  paper_title TEXT NOT NULL DEFAULT '',
+  paper_url TEXT NOT NULL DEFAULT '',
+  algorithm TEXT NOT NULL DEFAULT '',
+  discussion TEXT NOT NULL DEFAULT '',
+  author TEXT NOT NULL DEFAULT 'Team',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS research_proposals_updated_at_idx
+  ON research_proposals (updated_at DESC);
