@@ -55,6 +55,51 @@ function buildSeedSamples() {
   return samples;
 }
 
+function fallbackSamples() {
+  const seedSamples = buildSeedSamples();
+  const layout = buildBalancedLayoutIds(seedSamples);
+  const positionById = new Map(layout.map((id, index) => [id, index]));
+
+  return seedSamples.map((sample) => {
+    const positionIndex = positionById.get(sample.id);
+    return {
+      id: sample.id,
+      status: "대기중",
+      rb: sample.rb.ratio,
+      fr: sample.fr.toString(),
+      ppfd: sample.ppfd,
+      photoperiod: "16/8",
+      repeat: sample.repeat,
+      positionIndex,
+      chamberRow: Math.floor(positionIndex / 12),
+      chamberCol: positionIndex % 12,
+      gluco: "",
+      sinigrin: "",
+      dw: "",
+      fw: "",
+      notes: "",
+      updatedAt: "",
+    };
+  });
+}
+
+function fallbackMonitoring(samples = fallbackSamples()) {
+  return samples.flatMap((sample) =>
+    MONITORING_ROUNDS.map((round) => ({
+      id: `${sample.id}_W${round.week}`,
+      sampleId: sample.id,
+      week: round.week,
+      label: round.label,
+      checkedAt: "",
+      status: "정상",
+      contamination: "없음",
+      monitorFw: "",
+      notes: "",
+      updatedAt: "",
+    })),
+  );
+}
+
 function buildBalancedLayoutIds(samples) {
   const pattern = [30, 80, 50, 120];
   const queues = new Map(
@@ -116,7 +161,85 @@ function mapMonitoring(row) {
   };
 }
 
+async function ensureSamplesSchema() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS samples (
+      sample_id TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT '대기중',
+      condition_no INTEGER,
+      repeat_n INTEGER,
+      rb_ratio TEXT,
+      rb_red_ratio NUMERIC,
+      rb_blue_ratio NUMERIC,
+      fr_percent NUMERIC,
+      ppfd_umol_m2_s NUMERIC,
+      photoperiod_light_h INTEGER DEFAULT 16,
+      photoperiod_dark_h INTEGER DEFAULT 8,
+      position_index INTEGER UNIQUE,
+      chamber_row INTEGER,
+      chamber_col INTEGER,
+      gsl_gluco_umol_g NUMERIC,
+      gsl_sinigrin_umol_g NUMERIC,
+      dw_g NUMERIC,
+      fw_g NUMERIC,
+      notes TEXT DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS status TEXT DEFAULT '대기중'`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS condition_no INTEGER`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS repeat_n INTEGER`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS rb_ratio TEXT`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS rb_red_ratio NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS rb_blue_ratio NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS fr_percent NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS ppfd_umol_m2_s NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS photoperiod_light_h INTEGER DEFAULT 16`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS photoperiod_dark_h INTEGER DEFAULT 8`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS position_index INTEGER`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS chamber_row INTEGER`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS chamber_col INTEGER`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gsl_gluco_umol_g NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gsl_sinigrin_umol_g NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS dw_g NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS fw_g NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS samples_position_unique_idx ON samples (position_index)`;
+  await sql`CREATE INDEX IF NOT EXISTS samples_condition_idx ON samples (condition_no, repeat_n)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS phase2_monitoring (
+      id TEXT PRIMARY KEY,
+      sample_id TEXT NOT NULL REFERENCES samples(sample_id) ON DELETE CASCADE,
+      week INTEGER NOT NULL,
+      round_label TEXT NOT NULL,
+      checked_at TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT '정상',
+      contamination TEXT NOT NULL DEFAULT '없음',
+      monitor_fw_g NUMERIC,
+      notes TEXT DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (sample_id, week)
+    )
+  `;
+
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS checked_at TEXT DEFAULT ''`;
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS status TEXT DEFAULT '정상'`;
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS contamination TEXT DEFAULT '없음'`;
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS monitor_fw_g NUMERIC`;
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''`;
+  await sql`ALTER TABLE phase2_monitoring ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
+  await sql`
+    CREATE INDEX IF NOT EXISTS phase2_monitoring_sample_week_idx
+    ON phase2_monitoring (sample_id, week)
+  `;
+}
+
 async function seedSamples() {
+  await ensureSamplesSchema();
+
   const { rows } = await sql`SELECT COUNT(*)::INT AS count FROM samples`;
   if (rows[0]?.count > 0) return;
 
@@ -144,6 +267,8 @@ async function seedSamples() {
 }
 
 async function seedMonitoring() {
+  await ensureSamplesSchema();
+
   for (const sample of buildSeedSamples()) {
     for (const round of MONITORING_ROUNDS) {
       await sql`
@@ -173,15 +298,31 @@ async function fetchSamplesAndMonitoring() {
 }
 
 export async function GET() {
-  await seedSamples();
-  await seedMonitoring();
-  return NextResponse.json(await fetchSamplesAndMonitoring());
+  try {
+    await seedSamples();
+    await seedMonitoring();
+    return NextResponse.json(await fetchSamplesAndMonitoring());
+  } catch (error) {
+    console.error("/api/samples GET failed", error);
+    const samples = fallbackSamples();
+    return NextResponse.json(
+      {
+        samples,
+        monitoring: fallbackMonitoring(samples),
+        persisted: false,
+        error: error instanceof Error ? error.message : "Failed to load samples",
+      },
+      { status: 200 },
+    );
+  }
 }
 
 async function updateLayout(layout) {
   if (!Array.isArray(layout) || layout.length !== 144) {
     return NextResponse.json({ error: "layout must contain 144 items" }, { status: 400 });
   }
+
+  await ensureSamplesSchema();
 
   await sql`
     UPDATE samples
@@ -210,6 +351,8 @@ async function upsertMonitoring(body) {
   if (!body.id || !body.sampleId) {
     return NextResponse.json({ error: "monitoring id and sampleId are required" }, { status: 400 });
   }
+
+  await ensureSamplesSchema();
 
   await sql`
     INSERT INTO phase2_monitoring (
@@ -241,7 +384,13 @@ async function upsertSample(body) {
   }
 
   const rbParts = String(body.rb ?? "9:1").split(":").map(Number);
-  const positionIndex = Number(body.positionIndex ?? body.position_index ?? 0);
+  const requestedPositionIndex = body.positionIndex ?? body.position_index;
+  const positionIndex =
+    requestedPositionIndex === undefined || requestedPositionIndex === null
+      ? null
+      : Number(requestedPositionIndex);
+
+  await ensureSamplesSchema();
 
   const { rows } = await sql`
     INSERT INTO samples (
@@ -256,8 +405,10 @@ async function upsertSample(body) {
       ${Number.isFinite(rbParts[0]) ? rbParts[0] : 9},
       ${Number.isFinite(rbParts[1]) ? rbParts[1] : 1},
       ${numericOrNull(body.fr) ?? 0}, ${numericOrNull(body.ppfd) ?? 30},
-      16, 8, ${positionIndex}, ${Math.floor(positionIndex / 12)},
-      ${positionIndex % 12}, ${numericOrNull(body.gluco)},
+      16, 8, ${Number.isInteger(positionIndex) ? positionIndex : null},
+      ${Number.isInteger(positionIndex) ? Math.floor(positionIndex / 12) : null},
+      ${Number.isInteger(positionIndex) ? positionIndex % 12 : null},
+      ${numericOrNull(body.gluco)},
       ${numericOrNull(body.sinigrin)}, ${numericOrNull(body.dw)},
       ${numericOrNull(body.fw)}, ${body.notes ?? ""}, NOW()
     )
@@ -268,9 +419,9 @@ async function upsertSample(body) {
       dw_g = EXCLUDED.dw_g,
       fw_g = EXCLUDED.fw_g,
       notes = EXCLUDED.notes,
-      position_index = EXCLUDED.position_index,
-      chamber_row = EXCLUDED.chamber_row,
-      chamber_col = EXCLUDED.chamber_col,
+      position_index = COALESCE(EXCLUDED.position_index, samples.position_index),
+      chamber_row = COALESCE(EXCLUDED.chamber_row, samples.chamber_row),
+      chamber_col = COALESCE(EXCLUDED.chamber_col, samples.chamber_col),
       updated_at = NOW()
     RETURNING *
   `;
@@ -279,10 +430,27 @@ async function upsertSample(body) {
 }
 
 async function handleWrite(request) {
-  const body = await request.json();
-  if (body.layout) return updateLayout(body.layout);
-  if (body.kind === "monitoring") return upsertMonitoring(body.record ?? body);
-  return upsertSample(body.sample ?? body);
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  try {
+    if (body.layout) return updateLayout(body.layout);
+    if (body.kind === "monitoring") return upsertMonitoring(body.record ?? body);
+    return upsertSample(body.sample ?? body);
+  } catch (error) {
+    console.error("/api/samples write failed", error);
+    return NextResponse.json(
+      {
+        persisted: false,
+        error: error instanceof Error ? error.message : "Failed to save samples",
+      },
+      { status: 200 },
+    );
+  }
 }
 
 export async function POST(request) {
