@@ -75,6 +75,13 @@ function fallbackSamples() {
       chamberCol: positionIndex % 12,
       gluco: "",
       sinigrin: "",
+      gluconapin: "",
+      ohGlucobrassicin: "",
+      glucobrassicin: "",
+      glucoerucin: "",
+      gluconasturtiin: "",
+      chloroA: "",
+      chloroB: "",
       dw: "",
       fw: "",
       notes: "",
@@ -139,6 +146,13 @@ function mapSample(row) {
     chamberCol: row.chamber_col,
     gluco: row.gsl_gluco_umol_g?.toString() ?? "",
     sinigrin: row.gsl_sinigrin_umol_g?.toString() ?? "",
+    gluconapin: row.gluconapin?.toString() ?? "",
+    ohGlucobrassicin: row.oh_glucobrassicin?.toString() ?? "",
+    glucobrassicin: row.glucobrassicin?.toString() ?? "",
+    glucoerucin: row.glucoerucin?.toString() ?? "",
+    gluconasturtiin: row.gluconasturtiin?.toString() ?? "",
+    chloroA: row.chloro_a?.toString() ?? "",
+    chloroB: row.chloro_b?.toString() ?? "",
     dw: row.dw_g?.toString() ?? "",
     fw: row.fw_g?.toString() ?? "",
     notes: row.notes ?? "",
@@ -180,6 +194,13 @@ async function ensureSamplesSchema() {
       chamber_col INTEGER,
       gsl_gluco_umol_g NUMERIC,
       gsl_sinigrin_umol_g NUMERIC,
+      gluconapin NUMERIC,
+      oh_glucobrassicin NUMERIC,
+      glucobrassicin NUMERIC,
+      glucoerucin NUMERIC,
+      gluconasturtiin NUMERIC,
+      chloro_a NUMERIC,
+      chloro_b NUMERIC,
       dw_g NUMERIC,
       fw_g NUMERIC,
       notes TEXT DEFAULT '',
@@ -202,6 +223,13 @@ async function ensureSamplesSchema() {
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS chamber_col INTEGER`;
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gsl_gluco_umol_g NUMERIC`;
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gsl_sinigrin_umol_g NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gluconapin NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS oh_glucobrassicin NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS glucobrassicin NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS glucoerucin NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS gluconasturtiin NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS chloro_a NUMERIC`;
+  await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS chloro_b NUMERIC`;
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS dw_g NUMERIC`;
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS fw_g NUMERIC`;
   await sql`ALTER TABLE samples ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''`;
@@ -282,7 +310,32 @@ async function seedMonitoring() {
 
 async function fetchSamplesAndMonitoring() {
   const sampleResult = await sql`
-    SELECT *
+    SELECT
+      sample_id,
+      status,
+      condition_no,
+      repeat_n,
+      rb_ratio,
+      fr_percent,
+      ppfd_umol_m2_s,
+      photoperiod_light_h,
+      photoperiod_dark_h,
+      position_index,
+      chamber_row,
+      chamber_col,
+      gsl_gluco_umol_g,
+      gsl_sinigrin_umol_g,
+      gluconapin,
+      oh_glucobrassicin,
+      glucobrassicin,
+      glucoerucin,
+      gluconasturtiin,
+      chloro_a,
+      chloro_b,
+      dw_g,
+      fw_g,
+      notes,
+      updated_at
     FROM samples
     ORDER BY position_index NULLS LAST, sample_id
   `;
@@ -397,7 +450,9 @@ async function upsertSample(body) {
       sample_id, status, condition_no, repeat_n, rb_ratio, rb_red_ratio,
       rb_blue_ratio, fr_percent, ppfd_umol_m2_s, photoperiod_light_h,
       photoperiod_dark_h, position_index, chamber_row, chamber_col,
-      gsl_gluco_umol_g, gsl_sinigrin_umol_g, dw_g, fw_g, notes, updated_at
+      gsl_gluco_umol_g, gsl_sinigrin_umol_g, gluconapin, oh_glucobrassicin,
+      glucobrassicin, glucoerucin, gluconasturtiin, chloro_a, chloro_b,
+      dw_g, fw_g, notes, updated_at
     )
     VALUES (
       ${sampleId}, ${body.status ?? "대기중"}, ${conditionNumber(sampleId)},
@@ -409,13 +464,23 @@ async function upsertSample(body) {
       ${Number.isInteger(positionIndex) ? Math.floor(positionIndex / 12) : null},
       ${Number.isInteger(positionIndex) ? positionIndex % 12 : null},
       ${numericOrNull(body.gluco)},
-      ${numericOrNull(body.sinigrin)}, ${numericOrNull(body.dw)},
+      ${numericOrNull(body.sinigrin)}, ${numericOrNull(body.gluconapin)},
+      ${numericOrNull(body.ohGlucobrassicin)}, ${numericOrNull(body.glucobrassicin)},
+      ${numericOrNull(body.glucoerucin)}, ${numericOrNull(body.gluconasturtiin)},
+      ${numericOrNull(body.chloroA)}, ${numericOrNull(body.chloroB)}, ${numericOrNull(body.dw)},
       ${numericOrNull(body.fw)}, ${body.notes ?? ""}, NOW()
     )
     ON CONFLICT (sample_id) DO UPDATE SET
       status = EXCLUDED.status,
       gsl_gluco_umol_g = EXCLUDED.gsl_gluco_umol_g,
       gsl_sinigrin_umol_g = EXCLUDED.gsl_sinigrin_umol_g,
+      gluconapin = EXCLUDED.gluconapin,
+      oh_glucobrassicin = EXCLUDED.oh_glucobrassicin,
+      glucobrassicin = EXCLUDED.glucobrassicin,
+      glucoerucin = EXCLUDED.glucoerucin,
+      gluconasturtiin = EXCLUDED.gluconasturtiin,
+      chloro_a = EXCLUDED.chloro_a,
+      chloro_b = EXCLUDED.chloro_b,
       dw_g = EXCLUDED.dw_g,
       fw_g = EXCLUDED.fw_g,
       notes = EXCLUDED.notes,
