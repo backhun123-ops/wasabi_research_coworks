@@ -914,7 +914,7 @@ function GuidePanel({ phase }) {
       </div>
       <div className="grid gap-3 lg:grid-cols-4">
         {guides.map(([title, body]) => (
-          <article className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-3" key={title}>
+          <article className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] p-3" key={title}>
             <h3 className="text-sm font-semibold text-black">{title}</h3>
             <p className="mt-2 text-xs leading-relaxed text-[#344030]">{body}</p>
           </article>
@@ -940,7 +940,7 @@ function NumericInput({ value, disabled, label, onChange }) {
   return (
     <div className="min-w-28">
       <input
-        className="w-full rounded-md border border-[#A2B29F] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+        className="w-full rounded-md border border-[#A2B29F] bg-[#F5F5F5] px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
         disabled={disabled}
         inputMode="decimal"
         onChange={handleChange}
@@ -956,7 +956,7 @@ function NumericInput({ value, disabled, label, onChange }) {
 function TextInput({ value, placeholder, onChange, className = "w-44", disabled }) {
   return (
     <input
-      className={`${className} rounded-md border border-[#A2B29F] bg-white px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]`}
+      className={`${className} rounded-md border border-[#A2B29F] bg-[#F5F5F5] px-2 py-1.5 text-sm text-black outline-none transition placeholder:text-[#A2B29F] focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]`}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -969,7 +969,7 @@ function TextInput({ value, placeholder, onChange, className = "w-44", disabled 
 function StatusSelect({ value, options, onChange, disabled }) {
   return (
     <select
-      className="w-28 rounded-full border border-[#A2B29F] bg-white px-2 py-1 text-xs font-semibold text-[#1F261D] outline-none transition focus:ring-2 focus:ring-[#BDD2B6] disabled:bg-[#BDD2B6]"
+      className="w-28 rounded-full border border-[#A2B29F] bg-white px-2 py-1 text-xs font-semibold text-[#1F261D] outline-none transition focus:ring-2 focus:ring-[#BDD2B6] disabled:bg-[#F5F5F5]"
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       onClick={(event) => event.stopPropagation()}
@@ -1125,7 +1125,7 @@ function ChamberGrid() {
           </div>
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm font-medium text-[#1F261D] transition hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:border-[#A2B29F] disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm font-medium text-[#1F261D] transition hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:border-[#A2B29F] disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated}
           onClick={rebuildLayout}
           type="button"
@@ -1339,7 +1339,7 @@ function Phase2MonitoringTable() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <select
-            className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
+            className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
             onChange={(event) => setWeek(Number(event.target.value))}
             value={week}
           >
@@ -1468,7 +1468,7 @@ function LogBoard() {
       <div className="mb-3 grid grid-cols-1 gap-2">
         {PRESET_MESSAGES.map((preset) => (
           <button
-            className="rounded-lg border border-[#A2B29F] bg-[#BDD2B6] px-3 py-2 text-left text-xs text-[#1F261D] transition hover:border-[#A2B29F] hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:text-[#5E6F5A]"
+            className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-left text-xs text-[#1F261D] transition hover:border-[#A2B29F] hover:bg-[#BDD2B6] disabled:cursor-not-allowed disabled:text-[#5E6F5A]"
             disabled={!isAuthenticated}
             key={preset}
             onClick={() => setMessage((current) => (current ? `${current} ${preset}` : preset))}
@@ -1479,18 +1479,18 @@ function LogBoard() {
         ))}
       </div>
       <div className="grid gap-2">
-        <div className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] px-3 py-2 text-sm font-semibold text-black">
+        <div className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm font-semibold text-black">
           작성자: {currentUser ?? "읽기 전용"}
         </div>
         <textarea
-          className="min-h-24 resize-y rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none transition focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+          className="min-h-24 resize-y rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none transition focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated}
           onChange={(event) => setMessage(event.target.value)}
           placeholder="인수인계 내용을 입력"
           value={message}
         />
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
           disabled={!isAuthenticated || !message.trim()}
           onClick={send}
           type="button"
@@ -1501,7 +1501,7 @@ function LogBoard() {
       </div>
       <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
         {logs.map((log) => (
-          <article className="rounded-lg border border-[#BDD2B6] bg-[#BDD2B6] p-3" key={log.id}>
+          <article className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] p-3" key={log.id}>
             <div className="mb-1 flex items-center justify-between gap-3 text-xs">
               <span className="font-semibold text-black">{log.author}</span>
               <time className="text-[#5E6F5A]">{formatDateTime(log.createdAt)}</time>
@@ -1750,7 +1750,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             분류
             <select
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("category", event.target.value)}
               value={draft.category}
@@ -1765,7 +1765,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             제안 제목
             <input
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("title", event.target.value)}
               placeholder="예: RSM + Random Forest 비교 분석"
@@ -1775,7 +1775,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             논문명
             <input
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("paperTitle", event.target.value)}
               placeholder="참고 논문 제목"
@@ -1785,7 +1785,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             논문/자료 링크
             <input
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("paperUrl", event.target.value)}
               placeholder="https://..."
@@ -1795,7 +1795,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030] lg:col-span-2">
             알고리즘 후보
             <input
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("algorithm", event.target.value)}
               placeholder="RSM, Random Forest, XGBoost, Gaussian Process, Bayesian Optimization 등"
@@ -1805,7 +1805,7 @@ function ResearchProposalView() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030] lg:col-span-2">
             토론 메모
             <textarea
-              className="min-h-28 rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+              className="min-h-28 rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
               disabled={!isAuthenticated}
               onChange={(event) => updateDraft("discussion", event.target.value)}
               placeholder="왜 필요한지, 어떤 데이터 컬럼을 쓸지, 검증 방법은 무엇인지 기록"
@@ -1813,7 +1813,7 @@ function ResearchProposalView() {
             />
           </label>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A] lg:col-span-2"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A] lg:col-span-2"
             disabled={!canSubmit}
             type="submit"
           >
@@ -1867,7 +1867,7 @@ function ResearchProposalView() {
                 />
               </div>
               <textarea
-                className="mt-3 min-h-24 w-full rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#BDD2B6] disabled:text-[#5E6F5A]"
+                className="mt-3 min-h-24 w-full rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6] disabled:cursor-not-allowed disabled:bg-[#F5F5F5] disabled:text-[#5E6F5A]"
                 disabled={!isAuthenticated}
                 onChange={(event) => updateProposal(proposal.id, { discussion: event.target.value })}
                 value={proposal.discussion}
@@ -1944,7 +1944,7 @@ function AuthModal() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             연구원
             <select
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
               onChange={(event) => setSelectedUser(event.target.value)}
               value={selectedUser}
             >
@@ -1958,7 +1958,7 @@ function AuthModal() {
           <label className="grid gap-1 text-xs font-semibold text-[#344030]">
             접속 비밀번호
             <input
-              className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
+              className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm text-black outline-none focus:border-black focus:ring-1 focus:ring-[#BDD2B6]"
               onChange={(event) => setPassword(event.target.value)}
               placeholder="비밀번호"
               type="password"
@@ -1973,7 +1973,7 @@ function AuthModal() {
             접속
           </button>
           <button
-            className="rounded-lg border border-[#A2B29F] bg-white px-3 py-2 text-sm font-semibold text-[#344030] transition hover:bg-[#BDD2B6]"
+            className="rounded-lg border border-[#A2B29F] bg-[#F5F5F5] px-3 py-2 text-sm font-semibold text-[#344030] transition hover:bg-[#BDD2B6]"
             onClick={enterReadOnlyMode}
             type="button"
           >
@@ -2028,5 +2028,6 @@ function App() {
 }
 
 export default App;
+
 
 
